@@ -601,6 +601,8 @@
       searchCatalog:$("searchCatalog"), searchType:$("searchType"), modalRoot:$("modalRoot"), streamsRoot:$("streamsRoot"), toast:$("toast"), yearHint:$("yearHint"),
     };
     const years=[]; for(let y=2026;y>=1920;y--) years.push(y);
+    const escapeHtml=v=>String(v).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+    const escapeAttr=v=>escapeHtml(v).replaceAll("'","&#39;");
     function rebuildYearOptions(preserve) {
       const cur = preserve || els.discYear.value || "2025";
       const catalog = els.discCatalog.value;
@@ -628,8 +630,6 @@
     function setError(el,msg){ if(!msg){hide(el);el.textContent="";return;} el.textContent=msg; show(el); }
     function toast(msg){ els.toast.textContent=msg; show(els.toast); clearTimeout(toast._t); toast._t=setTimeout(()=>hide(els.toast),2600); }
     function setProgress(text,ratio){ show(els.loginProgress); els.loginStatus.textContent=text; els.loginBar.style.width=`${Math.max(0,Math.min(100,ratio*100))}%`; }
-    const escapeHtml=v=>String(v).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
-    const escapeAttr=v=>escapeHtml(v).replaceAll("'","&#39;");
     function posterUrl(id,poster){ if(poster) return poster; if(id&&String(id).startsWith("tt")) return `https://images.metahub.space/poster/small/${id}/img`; return ""; }
 
     async function apiPost(path,body){
