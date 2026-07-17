@@ -42,9 +42,14 @@ Everything runs **entirely in the browser** from a single static page — deploy
 
 ## Author
 
-Implemented by **Computer Engineer [Leandro Carlini Mingorance](https://lcarlini.github.io/lcarlini/)**.
+| | |
+|---|---|
+| **Name** | Leandro Carlini Mingorance |
+| **Role** | Computer Engineer |
+| **Portfolio** | [lcarlini.github.io/lcarlini](https://lcarlini.github.io/lcarlini/) |
+| **GitHub** | [github.com/lcarlini](https://github.com/lcarlini) |
 
-Portfolio: [https://lcarlini.github.io/lcarlini/](https://lcarlini.github.io/lcarlini/)
+StremioLens was designed and implemented by **Computer Engineer Leandro Carlini Mingorance**.
 
 ---
 
@@ -60,9 +65,11 @@ Built-in UI translations with a language selector:
 
 | Language | Flag |
 |----------|------|
-| **English** *(default)* | 🇺🇸 |
-| **Portuguese** | 🇧🇷 |
-| **Spanish** | 🇪🇸 |
+| **English** *(default)* | 🇺🇸 EN |
+| **Portuguese** | 🇧🇷 PT |
+| **Spanish** | 🇪🇸 ES |
+
+Language selector uses SVG flags + language codes in the app header.
 
 Language preference is remembered in the browser (`localStorage` key `stremiolens_lang` only — never credentials).
 

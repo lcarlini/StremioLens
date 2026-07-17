@@ -33,13 +33,31 @@
     .logo strong{display:block;font-family:var(--font-display);font-size:clamp(1.35rem,4vw,1.85rem);letter-spacing:.06em;line-height:1}
     .logo em{font-style:normal;color:var(--muted);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase}
     .top-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;justify-content:flex-end}
-    .lang{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:rgba(0,0,0,.25)}
-    .lang button{appearance:none;border:0;background:transparent;color:var(--muted);min-width:var(--touch);min-height:36px;padding:.35rem .55rem;cursor:pointer;font-size:1.05rem;line-height:1;display:grid;place-items:center}
-    .lang button.active{background:rgba(255,90,54,.2);color:var(--ink)}
-    .lang button:focus-visible{outline:2px solid var(--cyan);outline-offset:-2px}
+    .lang{display:inline-flex;gap:.25rem;padding:.2rem;border:1px solid var(--line);border-radius:999px;background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}
+    .lang button{appearance:none;border:0;background:transparent;color:var(--muted);min-width:42px;min-height:36px;padding:.25rem .4rem;cursor:pointer;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;gap:.3rem;transition:background .15s ease,transform .15s ease}
+    .lang button .flag{width:20px;height:14px;border-radius:2px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.2);flex:0 0 auto}
+    .lang button .flag svg{display:block;width:100%;height:100%}
+    .lang button .code{font-size:.65rem;font-weight:700;letter-spacing:.04em;opacity:.85}
+    .lang button.active{background:linear-gradient(135deg,rgba(255,90,54,.35),rgba(255,138,61,.2));color:var(--ink);box-shadow:0 0 0 1px rgba(255,90,54,.35)}
+    .lang button:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
     .pill{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .65rem;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);font-size:.72rem;font-weight:600}
     .pill i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
     .pill.warn i{background:var(--signal)}
+    select:disabled,input:disabled{opacity:.45;cursor:not-allowed}
+    .field.hint small{color:var(--muted);font-size:.68rem;font-weight:500}
+    .toolbar-card{padding:.75rem;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(0,0,0,.12))}
+    .author-card{display:grid;grid-template-columns:auto 1fr;gap:.85rem;align-items:center;margin-top:.75rem;padding:1rem 1.05rem;border-radius:16px;border:1px solid rgba(255,138,61,.28);background:linear-gradient(135deg,rgba(255,90,54,.1),rgba(62,198,255,.06));box-shadow:0 12px 30px rgba(0,0,0,.25)}
+    .author-avatar{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-family:var(--font-display);font-size:1.15rem;letter-spacing:.04em;color:#140804;background:linear-gradient(135deg,var(--signal),var(--cyan));box-shadow:0 8px 20px rgba(255,90,54,.3)}
+    .author-card .role{margin:0;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);font-weight:700}
+    .author-card .who{margin:.15rem 0 0;font-size:1rem;font-weight:700;color:var(--ink)}
+    .author-card .links{margin-top:.35rem;display:flex;flex-wrap:wrap;gap:.5rem .85rem;font-size:.8rem}
+    .author-card .links a{color:var(--signal-2);text-decoration:none;border-bottom:1px solid rgba(255,138,61,.35)}
+    .author-card .links a:hover{color:#ffd0b0}
+    .quick-bar{display:flex;flex-wrap:wrap;gap:.45rem;margin:.35rem 0 .75rem}
+    .chip{appearance:none;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);border-radius:999px;padding:.35rem .7rem;font-size:.75rem;font-weight:650;cursor:pointer;min-height:34px}
+    .chip:hover,.chip.active{border-color:rgba(255,90,54,.45);color:var(--ink);background:rgba(255,90,54,.12)}
+    .empty{padding:2rem 1rem;text-align:center;border:1px dashed var(--line);border-radius:16px;color:var(--muted)}
+    .empty strong{display:block;color:var(--ink);margin-bottom:.35rem;font-size:1.05rem}
     .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:1rem;margin-bottom:1rem}
     .hero-copy,.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(16px)}
     .hero-copy{position:relative;overflow:hidden;padding:clamp(1.15rem,3vw,2rem);min-height:min(48vw,300px);display:flex;flex-direction:column;justify-content:flex-end}
@@ -115,8 +133,6 @@
     .progress .bar>i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--signal),var(--cyan));transition:width .2s ease}
     .footer{margin-top:1.2rem;padding-top:.9rem;border-top:1px solid var(--line);color:var(--muted);font-size:.78rem;line-height:1.55}
     .footer a{color:var(--cyan);text-decoration:none}
-    .author{margin-top:.55rem;padding:.7rem .8rem;border-radius:12px;border:1px solid rgba(255,90,54,.28);background:rgba(255,90,54,.07);color:#f0d7cb}
-    .author strong{color:var(--signal-2)}
     .hidden{display:none!important}
     .modal-back{position:fixed;inset:0;background:rgba(3,5,8,.75);backdrop-filter:blur(8px);z-index:50;display:grid;place-items:end center;padding:0;padding-bottom:var(--safe-b)}
     .modal{width:min(860px,100%);max-height:min(92vh,920px);overflow:auto;background:#101722;border:1px solid var(--line);border-radius:18px 18px 0 0;box-shadow:var(--shadow);-webkit-overflow-scrolling:touch}
@@ -179,9 +195,18 @@
       </a>
       <div class="top-actions">
         <div class="lang" role="group" aria-label="Language">
-          <button type="button" data-lang="en" title="English" aria-label="English">🇺🇸</button>
-          <button type="button" data-lang="pt" title="Português" aria-label="Português">🇧🇷</button>
-          <button type="button" data-lang="es" title="Español" aria-label="Español">🇪🇸</button>
+          <button type="button" data-lang="en" title="English" aria-label="English">
+            <span class="flag" aria-hidden="true"><svg viewBox="0 0 60 42" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="42" fill="#b22234"/><g fill="#fff"><rect y="3.2" width="60" height="3.2"/><rect y="9.6" width="60" height="3.2"/><rect y="16" width="60" height="3.2"/><rect y="22.4" width="60" height="3.2"/><rect y="28.8" width="60" height="3.2"/><rect y="35.2" width="60" height="3.2"/></g><rect width="24" height="22.8" fill="#3c3b6e"/></svg></span>
+            <span class="code">EN</span>
+          </button>
+          <button type="button" data-lang="pt" title="Português" aria-label="Português">
+            <span class="flag" aria-hidden="true"><svg viewBox="0 0 60 42" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="42" fill="#009c3b"/><polygon points="0,0 30,21 0,42" fill="#ffdf00"/><circle cx="22" cy="21" r="8" fill="#002776"/></svg></span>
+            <span class="code">PT</span>
+          </button>
+          <button type="button" data-lang="es" title="Español" aria-label="Español">
+            <span class="flag" aria-hidden="true"><svg viewBox="0 0 60 42" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="42" fill="#c60b1e"/><rect y="10.5" width="60" height="21" fill="#ffc400"/></svg></span>
+            <span class="code">ES</span>
+          </button>
         </div>
         <span class="pill hide-sm"><i></i> <span data-i18n="pillSecure">Credentials never stored</span></span>
         <span class="pill warn hide-sm"><i></i> <span data-i18n="pillUnofficial">Unofficial</span></span>
@@ -257,7 +282,7 @@
           <div class="field"><label for="yearTo" data-i18n="yearTo">Year to</label><input id="yearTo" type="number" min="1880" max="2100" /></div>
         </div>
 
-        <div class="toolbar-row hidden" id="discoverToolbar">
+        <div class="toolbar-row hidden toolbar-card" id="discoverToolbar">
           <div class="field"><label for="discType" data-i18n="type">Type</label>
             <select id="discType"><option value="movie" data-i18n="movies">Movies</option><option value="series" data-i18n="series">Series</option></select>
           </div>
@@ -268,7 +293,10 @@
               <option value="imdbRating" data-i18n="featured">Featured (IMDb)</option>
             </select>
           </div>
-          <div class="field"><label for="discYear" data-i18n="year">Year</label><select id="discYear"></select></div>
+          <div class="field hint"><label for="discYear" data-i18n="year">Year</label>
+            <select id="discYear"></select>
+            <small id="yearHint" data-i18n="yearHintFilter">Filters results by year</small>
+          </div>
           <div class="field"><label for="discGenre" data-i18n="genre">Genre</label>
             <select id="discGenre"><option value="" data-i18n="any">Any</option>
               <option>Action</option><option>Adventure</option><option>Animation</option><option>Biography</option>
@@ -309,9 +337,14 @@
             <button type="button" class="btn ghost sm" id="exportCsv">CSV</button>
             <button type="button" class="btn ghost sm" id="toggleStats" data-i18n="stats">Stats</button>
             <button type="button" class="btn ghost sm" id="refreshLib" data-i18n="refresh">Refresh</button>
+            <button type="button" class="btn ghost sm" id="randomPick" data-i18n="surpriseMe">Surprise me</button>
+            <button type="button" class="btn ghost sm" id="onlyNotInLib" data-i18n="notInLibrary">Not in library</button>
+            <button type="button" class="btn ghost sm" id="loadMore" data-i18n="loadMore">Load more</button>
           </div>
         </div>
       </div>
+
+      <div class="quick-bar" id="quickBar"></div>
 
       <div class="meta-bar"><div id="resultMeta"></div><div id="sortMeta" class="muted"></div></div>
       <div id="content"></div>
@@ -363,10 +396,13 @@
         needCreds:"Stremio account email and password are required.",
         corsHint:" — use HTTPS (GitHub Pages), not file://",
         credit:"Data source: your <strong>Stremio account</strong> via <a href=\"https://api.strem.io/\" target=\"_blank\" rel=\"noopener noreferrer\">api.strem.io</a> · catalogs via Cinemeta. Unofficial tool — not affiliated with Stremio.",
-        authorLine:"Implemented by <strong>{title} {name}</strong> · <a href=\"{url}\" target=\"_blank\" rel=\"noopener noreferrer\">{url}</a>",
+        authorRole:"Authored & engineered by", authorTitle:"Computer Engineer",
+        authorPortfolio:"Portfolio", authorGitHub:"GitHub",
         engineer:"Computer Engineer", yes:"yes", no:"no", lib:"lib", mode_library:"library", mode_discover:"discover", mode_search:"search",
-        statsItems:"Items", statsWatched:"Watched", statsAvg:"Avg ranking", statsType:"By type", statsDecade:"By decade", statsGenres:"Top genres"
-      },
+        statsItems:"Items", statsWatched:"Watched", statsAvg:"Avg ranking", statsType:"By type", statsDecade:"By decade", statsGenres:"Top genres",
+        yearHintFilter:"Optional filter on results", yearHintCatalog:"Required for New / by year", yearAny:"Any year",
+        surpriseMe:"Surprise me", notInLibrary:"Not in library", loadMore:"Load more", copied:"Copied",
+        nothingToPick:"No titles available to pick.", onlyMissing:"Showing titles not in your library"
       pt:{
         tagline:"para sua conta Stremio", pillSecure:"Credenciais nunca salvas", pillUnofficial:"Não oficial",
         kicker:"Conta Stremio necessária", heroTitle:"BIBLIOTECA &amp;<br /><span>DESCOBRIR</span>",
@@ -394,10 +430,13 @@
         needCreds:"E-mail e senha da conta Stremio são obrigatórios.",
         corsHint:" — use HTTPS (GitHub Pages), não file://",
         credit:"Fonte: sua <strong>conta Stremio</strong> via <a href=\"https://api.strem.io/\" target=\"_blank\" rel=\"noopener noreferrer\">api.strem.io</a> · catálogos via Cinemeta. Ferramenta não oficial — sem afiliação com o Stremio.",
-        authorLine:"Implementado por <strong>{title} {name}</strong> · <a href=\"{url}\" target=\"_blank\" rel=\"noopener noreferrer\">{url}</a>",
+        authorRole:"Desenvolvido e projetado por", authorTitle:"Engenheiro de Computação",
+        authorPortfolio:"Portfólio", authorGitHub:"GitHub",
         engineer:"Engenheiro de Computação", yes:"sim", no:"não", lib:"bib", mode_library:"biblioteca", mode_discover:"descobrir", mode_search:"busca",
-        statsItems:"Itens", statsWatched:"Assistidos", statsAvg:"Nota média", statsType:"Por tipo", statsDecade:"Por década", statsGenres:"Top gêneros"
-      },
+        statsItems:"Itens", statsWatched:"Assistidos", statsAvg:"Nota média", statsType:"Por tipo", statsDecade:"Por década", statsGenres:"Top gêneros",
+        yearHintFilter:"Filtro opcional nos resultados", yearHintCatalog:"Obrigatório em Novos / por ano", yearAny:"Qualquer ano",
+        surpriseMe:"Me surpreenda", notInLibrary:"Fora da biblioteca", loadMore:"Carregar mais", copied:"Copiado",
+        nothingToPick:"Nenhum título disponível.", onlyMissing:"Mostrando títulos fora da sua biblioteca"
       es:{
         tagline:"para tu cuenta de Stremio", pillSecure:"Credenciales nunca guardadas", pillUnofficial:"No oficial",
         kicker:"Se requiere cuenta Stremio", heroTitle:"BIBLIOTECA &amp;<br /><span>DESCUBRIR</span>",
@@ -425,9 +464,13 @@
         needCreds:"El correo y la contraseña de Stremio son obligatorios.",
         corsHint:" — usa HTTPS (GitHub Pages), no file://",
         credit:"Fuente: tu <strong>cuenta Stremio</strong> vía <a href=\"https://api.strem.io/\" target=\"_blank\" rel=\"noopener noreferrer\">api.strem.io</a> · catálogos vía Cinemeta. Herramienta no oficial — sin afiliación con Stremio.",
-        authorLine:"Implementado por <strong>{title} {name}</strong> · <a href=\"{url}\" target=\"_blank\" rel=\"noopener noreferrer\">{url}</a>",
+        authorRole:"Diseñado e implementado por", authorTitle:"Ingeniero en Computación",
+        authorPortfolio:"Portafolio", authorGitHub:"GitHub",
         engineer:"Ingeniero en Computación", yes:"sí", no:"no", lib:"bib", mode_library:"biblioteca", mode_discover:"descubrir", mode_search:"búsqueda",
-        statsItems:"Elementos", statsWatched:"Vistos", statsAvg:"Nota media", statsType:"Por tipo", statsDecade:"Por década", statsGenres:"Top géneros"
+        statsItems:"Elementos", statsWatched:"Vistos", statsAvg:"Nota media", statsType:"Por tipo", statsDecade:"Por década", statsGenres:"Top géneros",
+        yearHintFilter:"Filtro opcional sobre resultados", yearHintCatalog:"Obligatorio en Nuevos / por año", yearAny:"Cualquier año",
+        surpriseMe:"Sorpréendeme", notInLibrary:"Fuera de biblioteca", loadMore:"Cargar más", copied:"Copiado",
+        nothingToPick:"No hay títulos disponibles.", onlyMissing:"Mostrando títulos fuera de tu biblioteca"
       }
     };
 
@@ -443,14 +486,27 @@
       document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.getAttribute("data-i18n")); });
       document.querySelectorAll("[data-i18n-html]").forEach((el) => { el.innerHTML = t(el.getAttribute("data-i18n-html")); });
       document.querySelectorAll(".lang button").forEach((b) => b.classList.toggle("active", b.dataset.lang === lang));
-      const credit = `${t("credit")}<div class="author">${t("authorLine",{title:t("engineer"),name:AUTHOR.name,url:AUTHOR.url})}</div>`;
+      const credit = `${t("credit")}
+        <div class="author-card">
+          <div class="author-avatar" aria-hidden="true">LC</div>
+          <div>
+            <p class="role">${escapeHtml(t("authorRole"))}</p>
+            <p class="who">${escapeHtml(t("authorTitle"))} ${escapeHtml(AUTHOR.name)}</p>
+            <div class="links">
+              <a href="${AUTHOR.url}" target="_blank" rel="noopener noreferrer">${escapeHtml(t("authorPortfolio"))}</a>
+              <a href="https://github.com/lcarlini" target="_blank" rel="noopener noreferrer">${escapeHtml(t("authorGitHub"))}</a>
+              <a href="${AUTHOR.url}" target="_blank" rel="noopener noreferrer">lcarlini.github.io/lcarlini</a>
+            </div>
+          </div>
+        </div>`;
       $("creditLogin").innerHTML = credit; $("creditApp").innerHTML = credit;
       if (session.email) $("sessionLabel").textContent = t("connectedAs", { email: session.email });
+      syncDiscoverControls();
       try { localStorage.setItem("stremiolens_lang", lang); } catch (_) {}
       if (!els.appView.classList.contains("hidden")) render();
     }
 
-    const session = { authKey:null, email:null, library:[], catalog:[], mode:"library", view:"posters" };
+    const session = { authKey:null, email:null, library:[], catalog:[], catalogRaw:[], mode:"library", view:"posters", skip:0, onlyMissing:false };
     const $ = (id) => document.getElementById(id);
     const els = {
       loginView:$("loginView"), appView:$("appView"), loginForm:$("loginForm"), email:$("email"), password:$("password"),
@@ -460,10 +516,30 @@
       minRanking:$("minRanking"), yearFrom:$("yearFrom"), yearTo:$("yearTo"), sortBy:$("sortBy"), sortDir:$("sortDir"),
       statsPanel:$("statsPanel"), appError:$("appError"), libraryToolbar:$("libraryToolbar"), discoverToolbar:$("discoverToolbar"),
       searchToolbar:$("searchToolbar"), discType:$("discType"), discCatalog:$("discCatalog"), discYear:$("discYear"), discGenre:$("discGenre"),
-      searchCatalog:$("searchCatalog"), searchType:$("searchType"), modalRoot:$("modalRoot"), toast:$("toast"),
+      searchCatalog:$("searchCatalog"), searchType:$("searchType"), modalRoot:$("modalRoot"), toast:$("toast"), yearHint:$("yearHint"),
     };
     const years=[]; for(let y=2026;y>=1920;y--) years.push(y);
-    els.discYear.innerHTML = years.map((y)=>`<option value="${y}" ${y===2025?"selected":""}>${y}</option>`).join("");
+    function rebuildYearOptions(preserve) {
+      const cur = preserve || els.discYear.value || "2025";
+      const catalog = els.discCatalog.value;
+      const anyOpt = catalog === "year" ? "" : `<option value="">${escapeHtml(t("yearAny"))}</option>`;
+      els.discYear.innerHTML = anyOpt + years.map((y)=>`<option value="${y}">${y}</option>`).join("");
+      if ([...els.discYear.options].some((o) => o.value === cur)) els.discYear.value = cur;
+      else if (catalog === "year") els.discYear.value = "2025";
+      else els.discYear.value = "";
+    }
+    function syncDiscoverControls() {
+      const catalog = els.discCatalog.value;
+      // Year is ALWAYS enabled. For "year" catalog it drives the API; otherwise it filters client-side.
+      els.discYear.disabled = false;
+      els.discGenre.disabled = catalog === "year";
+      if (catalog === "year" && !els.discYear.value) els.discYear.value = "2025";
+      if (els.yearHint) els.yearHint.textContent = catalog === "year" ? t("yearHintCatalog") : t("yearHintFilter");
+      rebuildYearOptions(els.discYear.value);
+    }
+    rebuildYearOptions("");
+    syncDiscoverControls();
+    if (els.discCatalog.value !== "year") els.discYear.value = "";
 
     function assertNoCredentialStorage(){ try{["stremiolens_email","stremiolens_password","stremiolens_credentials","stremio_auth"].forEach(k=>{localStorage.removeItem(k);sessionStorage.removeItem(k);});}catch(_){}}
     const show=el=>el.classList.remove("hidden"), hide=el=>el.classList.add("hidden");
@@ -562,6 +638,13 @@
         if(f.genre) items=items.filter(i=>i.genres.includes(f.genre));
         if(f.watched==="watched") items=items.filter(i=>i.watched);
         if(f.watched==="unwatched") items=items.filter(i=>!i.watched);
+      } else {
+        // Discover / search: optional year filter from Discover year dropdown
+        const y = els.discYear.value ? Number(els.discYear.value) : null;
+        if (els.discCatalog.value !== "year" && y != null && Number.isFinite(y)) {
+          items = items.filter((i) => i.year === y);
+        }
+        if (session.onlyMissing) items = items.filter((i) => !libraryIds().has(i.id));
       }
       const desc=f.sortDir==="desc";
       items.sort((a,b)=>{
@@ -581,13 +664,26 @@
     }
     function render(){
       const items=visibleItems(); const ids=libraryIds(); items.forEach(i=>{i.inLibrary=ids.has(i.id);});
-      els.resultMeta.textContent=t("itemsShown",{n:items.length,mode:t(`mode_${session.mode}`)});
+      els.resultMeta.textContent=t("itemsShown",{n:items.length,mode:t(`mode_${session.mode}`)}) + (session.onlyMissing && session.mode!=="library" ? ` · ${t("onlyMissing")}` : "");
       els.sortMeta.textContent=t("viewMeta",{view:t(session.view),sort:els.sortBy.value,dir:els.sortDir.value});
+      $("onlyNotInLib")?.classList.toggle("active", session.onlyMissing);
       if(session.view==="table") renderTable(items); else if(session.view==="list") renderList(items); else renderPosters(items);
       if(!els.statsPanel.classList.contains("hidden")) renderStats(items);
+      renderQuickBar(items);
+    }
+    function renderQuickBar(items) {
+      const bar = $("quickBar");
+      if (!bar) return;
+      if (session.mode === "library" || !items.length) { bar.innerHTML = ""; return; }
+      const years = [...new Set(items.map((i) => i.year).filter(Boolean))].sort((a, b) => b - a).slice(0, 8);
+      bar.innerHTML = years.map((y) => `<button type="button" class="chip ${String(els.discYear.value)===String(y)?"active":""}" data-year="${y}">${y}</button>`).join("");
+      bar.querySelectorAll("button[data-year]").forEach((btn) => btn.addEventListener("click", () => {
+        els.discYear.value = btn.dataset.year;
+        render();
+      }));
     }
     function renderPosters(items){
-      if(!items.length){ els.content.innerHTML=`<p class="muted">${escapeHtml(t("noTitles"))}</p>`; return; }
+      if(!items.length){ els.content.innerHTML=`<div class="empty"><strong>${escapeHtml(t("noTitles"))}</strong><span>${escapeHtml(t("yearHintFilter"))}</span></div>`; return; }
       els.content.innerHTML=`<div class="poster-grid">${items.map((item,idx)=>`<article class="card" data-idx="${idx}">
         ${item.inLibrary?`<span class="badge">${escapeHtml(t("inLibrary"))}</span>`:""}
         <img src="${escapeAttr(item.poster||"")}" alt="" loading="lazy" onerror="this.style.opacity=.2" />
@@ -662,10 +758,14 @@
             ${detail.inLibrary?`<button type="button" class="btn danger sm" id="btnRemoveLib">${escapeHtml(t("remLib"))}</button>`:`<button type="button" class="btn ok sm" id="btnAddLib">${escapeHtml(t("addLib"))}</button>`}
             ${imdb?`<a class="btn ghost sm" href="${imdb}" target="_blank" rel="noopener noreferrer">IMDb</a>`:""}
             ${trailerUrl?`<a class="btn ghost sm" href="${escapeAttr(trailerUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(t("trailer"))}</a>`:""}
+            <button type="button" class="btn ghost sm" id="btnCopyId">${escapeHtml(detail.id || "ID")}</button>
             <button type="button" class="btn ghost sm" id="btnCloseModal">${escapeHtml(t("close"))}</button>
           </div>
         </div></div></div>`;
       $("btnCloseModal").onclick=closeModal; els.modalRoot.onclick=e=>{ if(e.target===els.modalRoot) closeModal(); };
+      $("btnCopyId")?.addEventListener("click", async () => {
+        try { await navigator.clipboard.writeText(detail.id || detail.name); toast(t("copied")); } catch (_) { toast(detail.id || detail.name); }
+      });
       const addBtn=$("btnAddLib"), remBtn=$("btnRemoveLib");
       if(addBtn) addBtn.onclick=async()=>{ addBtn.disabled=true; try{ await addToLibrary(detail); toast(t("addedToast")); closeModal(); render(); }catch(err){ toast(err.message||String(err)); addBtn.disabled=false; } };
       if(remBtn) remBtn.onclick=async()=>{ remBtn.disabled=true; try{ await removeFromLibrary(detail); toast(t("removedToast")); closeModal(); render(); }catch(err){ toast(err.message||String(err)); remBtn.disabled=false; } };
@@ -684,13 +784,26 @@
       els.searchToolbar.classList.toggle("hidden", mode!=="search");
       if(mode==="discover"&&!session.catalog.length) loadDiscover(); else render();
     }
-    async function loadDiscover(){
+    async function loadDiscover(append=false){
       setError(els.appError,""); const type=els.discType.value, catalog=els.discCatalog.value, extras={};
-      if(catalog==="year") extras.genre=els.discYear.value; else if(els.discGenre.value) extras.genre=els.discGenre.value;
-      els.discYear.disabled=catalog!=="year"; els.discGenre.disabled=catalog==="year";
-      els.content.innerHTML=`<p class="muted">${escapeHtml(t("loadingCatalog"))}</p>`;
-      try{ session.catalog=await fetchCatalog(type,catalog,extras); render(); }
-      catch(err){ setError(els.appError,err.message||String(err)); els.content.innerHTML=""; }
+      if(catalog==="year") {
+        if (!els.discYear.value) els.discYear.value = "2025";
+        extras.genre = els.discYear.value;
+      } else if(els.discGenre.value) {
+        extras.genre = els.discGenre.value;
+      }
+      if (append) extras.skip = String(session.skip || 0);
+      else session.skip = 0;
+      syncDiscoverControls();
+      if (!append) els.content.innerHTML=`<p class="muted">${escapeHtml(t("loadingCatalog"))}</p>`;
+      try{
+        const batch = await fetchCatalog(type,catalog,extras);
+        session.catalog = append ? [...session.catalog, ...batch] : batch;
+        session.catalogRaw = session.catalog.slice();
+        session.skip = (session.skip || 0) + batch.length;
+        render();
+      }
+      catch(err){ setError(els.appError,err.message||String(err)); if(!append) els.content.innerHTML=""; }
     }
     async function runSearch(){
       const q=els.searchCatalog.value.trim(); if(!q){ toast(t("enterSearch")); return; }
@@ -743,10 +856,17 @@
     els.loginForm.addEventListener("submit",onLogin);
     $("signOut").onclick=signOut; $("clearFilters").onclick=clearFilters; $("exportCsv").onclick=exportCsv;
     $("toggleStats").onclick=()=>{ els.statsPanel.classList.toggle("hidden"); if(!els.statsPanel.classList.contains("hidden")) renderStats(visibleItems()); };
-    $("refreshLib").onclick=refreshLibrary; $("loadDiscover").onclick=loadDiscover; $("runSearch").onclick=runSearch;
+    $("refreshLib").onclick=refreshLibrary; $("loadDiscover").onclick=()=>loadDiscover(false); $("runSearch").onclick=runSearch;
+    $("loadMore").onclick=()=>loadDiscover(true);
+    $("randomPick").onclick=()=>{ const items=visibleItems(); if(!items.length){ toast(t("nothingToPick")); return; } openDetails(items[Math.floor(Math.random()*items.length)]); };
+    $("onlyNotInLib").onclick=()=>{ session.onlyMissing=!session.onlyMissing; render(); };
     els.searchCatalog.addEventListener("keydown",e=>{ if(e.key==="Enter") runSearch(); });
-    els.discCatalog.addEventListener("change",()=>{ els.discYear.disabled=els.discCatalog.value!=="year"; els.discGenre.disabled=els.discCatalog.value==="year"; });
-    els.discYear.disabled=true;
+    els.discCatalog.addEventListener("change",()=>{ syncDiscoverControls(); });
+    els.discYear.addEventListener("change",()=>{
+      if (els.discCatalog.value === "year") loadDiscover(false);
+      else render();
+    });
+
     document.querySelectorAll(".desktop-tabs .tab, #mobileNav button").forEach(tab=>tab.addEventListener("click",()=>setMode(tab.dataset.mode)));
     $("viewSeg").querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>{
       session.view=btn.dataset.view; $("viewSeg").querySelectorAll("button").forEach(b=>b.classList.toggle("active",b===btn)); render();
