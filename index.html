@@ -44,8 +44,59 @@
     .pill i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
     .pill.warn i{background:var(--signal)}
     select:disabled,input:disabled{opacity:.45;cursor:not-allowed}
-    .field.hint small{color:var(--muted);font-size:.68rem;font-weight:500}
+    .toolbar-hint{margin:.45rem 0 0;color:var(--muted);font-size:.68rem;font-weight:500;line-height:1.35;min-height:1.1em}
     .toolbar-card{padding:.75rem;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(0,0,0,.12))}
+    .discover-bar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:.55rem .5rem;align-items:end}
+    .discover-bar .field{min-width:0;flex:unset}
+    .discover-bar .btn{white-space:nowrap;align-self:end}
+    @media (max-width:900px){.discover-bar{grid-template-columns:repeat(2,minmax(0,1fr))}.discover-bar .btn{grid-column:1/-1}}
+    @media (max-width:420px){.discover-bar{grid-template-columns:1fr}}
+    .spotlight{position:relative;overflow:hidden;border-radius:18px;border:1px solid var(--line);min-height:200px;margin-bottom:.85rem;cursor:pointer;isolation:isolate;background:#0c121c}
+    .spotlight.hidden{display:none!important}
+    .spotlight-bg{position:absolute;inset:0;background-size:cover;background-position:center 20%;transform:scale(1.06);filter:saturate(1.1);transition:transform .6s ease}
+    .spotlight:hover .spotlight-bg{transform:scale(1.1)}
+    .spotlight::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,9,13,.92) 0%,rgba(7,9,13,.72) 42%,rgba(7,9,13,.2) 100%),linear-gradient(0deg,rgba(7,9,13,.75),transparent 55%)}
+    .spotlight-body{position:relative;z-index:1;padding:clamp(1rem,3vw,1.6rem);max-width:min(34rem,92%);display:grid;gap:.45rem}
+    .spotlight-kicker{font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
+    .spotlight h3{margin:0;font-family:var(--font-display);font-size:clamp(1.8rem,5vw,2.6rem);letter-spacing:.04em;line-height:.95}
+    .spotlight .meta{color:#c5d0de;font-size:.84rem;display:flex;flex-wrap:wrap;gap:.35rem .7rem}
+    .spotlight .rank{color:#ffc39a;font-weight:700}
+    .spotlight p{margin:0;color:#aebbcb;font-size:.86rem;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .spotlight .actions{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.25rem}
+    .shelf{margin:0 0 .9rem}
+    .shelf-head{display:flex;align-items:baseline;justify-content:space-between;gap:.75rem;margin-bottom:.55rem}
+    .shelf-head h3{margin:0;font-family:var(--font-display);font-size:1.15rem;letter-spacing:.06em}
+    .shelf-rail{display:flex;gap:.65rem;overflow-x:auto;padding-bottom:.35rem;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+    .shelf-card{flex:0 0 108px;scroll-snap-align:start;cursor:pointer;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:rgba(0,0,0,.28);transition:transform .15s ease,border-color .15s ease}
+    .shelf-card:hover{transform:translateY(-2px);border-color:rgba(255,90,54,.4)}
+    .shelf-card img{width:100%;aspect-ratio:2/3;object-fit:cover;display:block;background:#10161f}
+    .shelf-card span{display:block;padding:.4rem .45rem;font-size:.68rem;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .card .rank-pill{position:absolute;top:.45rem;right:.45rem;padding:.15rem .4rem;border-radius:999px;font-size:.68rem;font-weight:700;background:rgba(7,9,13,.82);border:1px solid rgba(255,195,154,.35);color:#ffc39a}
+    .card .hover-actions{position:absolute;inset:auto 0 0 0;display:flex;gap:.3rem;justify-content:center;padding:.45rem;background:linear-gradient(0deg,rgba(7,9,13,.92),transparent);opacity:0;transform:translateY(6px);transition:opacity .18s ease,transform .18s ease;pointer-events:none}
+    .card:hover .hover-actions,.card:focus-within .hover-actions{opacity:1;transform:translateY(0);pointer-events:auto}
+    .card.fav::before{content:"";position:absolute;top:.45rem;left:50%;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:var(--signal);box-shadow:0 0 10px var(--signal);z-index:2}
+    .poster-grid.compact{grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:.55rem}
+    .poster-grid .card{animation:cardIn .35s ease both}
+    .poster-grid .card:nth-child(1){animation-delay:.02s}.poster-grid .card:nth-child(2){animation-delay:.04s}.poster-grid .card:nth-child(3){animation-delay:.06s}
+    .poster-grid .card:nth-child(4){animation-delay:.08s}.poster-grid .card:nth-child(5){animation-delay:.1s}.poster-grid .card:nth-child(6){animation-delay:.12s}
+    @keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+    .skeleton-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:.75rem}
+    .skeleton{aspect-ratio:2/3;border-radius:14px;background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.1),rgba(255,255,255,.04));background-size:200% 100%;animation:shimmer 1.2s linear infinite;border:1px solid var(--line)}
+    @keyframes shimmer{to{background-position:-200% 0}}
+    .progress-ring{display:inline-flex;align-items:center;gap:.45rem;font-size:.78rem;color:var(--muted);margin:0 0 .75rem}
+    .progress-ring i{width:72px;height:6px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;display:block}
+    .progress-ring i>b{display:block;height:100%;background:linear-gradient(90deg,var(--signal),var(--cyan));border-radius:inherit}
+    .fab-top{position:fixed;right:max(.85rem,env(safe-area-inset-right));bottom:calc(5.5rem + var(--safe-b));z-index:25;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:rgba(16,22,32,.92);color:var(--ink);cursor:pointer;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .2s ease;backdrop-filter:blur(10px)}
+    .fab-top.show{opacity:1;pointer-events:auto}
+    .shortcuts{position:fixed;inset:0;z-index:70;background:rgba(3,5,8,.72);backdrop-filter:blur(8px);display:grid;place-items:center;padding:1rem}
+    .shortcuts.hidden{display:none!important}
+    .shortcuts-panel{width:min(440px,100%);border-radius:16px;border:1px solid var(--line);background:#101722;padding:1.1rem 1.2rem;box-shadow:var(--shadow)}
+    .shortcuts-panel h3{margin:0 0 .75rem;font-family:var(--font-display);letter-spacing:.05em}
+    .shortcuts-panel dl{margin:0;display:grid;gap:.45rem}
+    .shortcuts-panel div{display:flex;justify-content:space-between;gap:1rem;align-items:center;font-size:.86rem;color:var(--muted)}
+    .shortcuts-panel kbd{font:650 .75rem/1 var(--font-body);padding:.25rem .45rem;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--ink)}
+    .chip.active.fav-chip{border-color:rgba(255,90,54,.55);background:rgba(255,90,54,.18);color:var(--ink)}
+    .btn.active{border-color:rgba(255,90,54,.5)!important;background:rgba(255,90,54,.16)!important;color:var(--ink)!important}
     .author-card{display:grid;grid-template-columns:auto 1fr;gap:.85rem;align-items:center;margin-top:.75rem;padding:1rem 1.05rem;border-radius:16px;border:1px solid rgba(255,138,61,.28);background:linear-gradient(135deg,rgba(255,90,54,.1),rgba(62,198,255,.06));box-shadow:0 12px 30px rgba(0,0,0,.25)}
     .author-avatar{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-family:var(--font-display);font-size:1.15rem;letter-spacing:.04em;color:#140804;background:linear-gradient(135deg,var(--signal),var(--cyan));box-shadow:0 8px 20px rgba(255,90,54,.3)}
     .author-card .role{margin:0;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);font-weight:700}
@@ -69,6 +120,39 @@
     .stream-row .title{font-size:.86rem;line-height:1.35;word-break:break-word}
     .stream-row .meta{margin-top:.3rem;color:var(--muted);font-size:.75rem;display:flex;flex-wrap:wrap;gap:.35rem .7rem}
     .stream-actions{display:flex;flex-wrap:wrap;gap:.35rem;justify-content:flex-end}
+    .stream-badges{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.35rem}
+    .stream-badges b{font-size:.65rem;font-weight:700;letter-spacing:.04em;padding:.12rem .4rem;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+    .stream-badges b.hdr{color:#ffd27a;border-color:rgba(255,210,122,.45);background:rgba(255,210,122,.08)}
+    .stream-badges b.uhd{color:#9ad7ff;border-color:rgba(62,198,255,.45);background:rgba(62,198,255,.08)}
+    .stream-badges b.atmos{color:#c9b6ff;border-color:rgba(180,150,255,.4);background:rgba(180,150,255,.08)}
+    .player-back{position:fixed;inset:0;z-index:80;background:#000;display:grid;grid-template-rows:auto 1fr auto;color:#fff}
+    .player-back.hidden{display:none!important}
+    .player-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;padding:.75rem 1rem;background:linear-gradient(180deg,rgba(0,0,0,.85),transparent);position:relative;z-index:3}
+    .player-top h2{margin:0;font-family:var(--font-display);font-size:clamp(1.2rem,3vw,1.7rem);letter-spacing:.04em;line-height:1}
+    .player-top .subline{margin:.25rem 0 0;color:#b7c2d0;font-size:.8rem}
+    .player-stage{position:relative;min-height:0;display:grid;place-items:center;background:#000}
+    .player-stage video{width:100%;height:100%;max-height:100%;object-fit:contain;background:#000;outline:none}
+    .player-overlay{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:2}
+    .player-overlay .msg{pointer-events:auto;max-width:min(520px,92%);padding:1rem 1.15rem;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(10,14,20,.88);text-align:center;backdrop-filter:blur(10px)}
+    .player-overlay .msg strong{display:block;margin-bottom:.35rem;font-size:1rem}
+    .player-overlay .msg p{margin:0;color:#b7c2d0;font-size:.84rem;line-height:1.45}
+    .player-spinner{width:42px;height:42px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:var(--cyan);animation:spin .8s linear infinite;margin:0 auto .75rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .player-bottom{padding:.55rem .85rem .85rem;background:linear-gradient(0deg,rgba(0,0,0,.92),rgba(0,0,0,.55) 70%,transparent);position:relative;z-index:3}
+    .player-seek{width:100%;appearance:none;height:6px;border-radius:999px;background:rgba(255,255,255,.18);outline:none;cursor:pointer}
+    .player-seek::-webkit-slider-thumb{appearance:none;width:14px;height:14px;border-radius:50%;background:var(--signal);box-shadow:0 0 0 3px rgba(255,90,54,.25)}
+    .player-controls{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;margin-top:.55rem}
+    .player-controls .btn{min-height:36px}
+    .player-time{font-variant-numeric:tabular-nums;font-size:.78rem;color:#c5d0de;min-width:7.5rem}
+    .player-stats{display:flex;flex-wrap:wrap;gap:.35rem .7rem;margin-top:.45rem;font-size:.72rem;color:#9aabbf}
+    .player-stats b{color:#e8eef6;font-weight:650}
+    .player-panel{position:absolute;right:.85rem;bottom:5.5rem;z-index:4;width:min(280px,calc(100% - 1.5rem));max-height:45vh;overflow:auto;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(12,16,24,.96);padding:.65rem;box-shadow:var(--shadow)}
+    .player-panel.hidden{display:none!important}
+    .player-panel h4{margin:0 0 .45rem;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#9aabbf}
+    .player-panel button{width:100%;text-align:left;margin-bottom:.3rem}
+    .player-panel button.active{border-color:rgba(255,90,54,.5);background:rgba(255,90,54,.16)}
+    .player-vol{width:90px;accent-color:var(--cyan)}
+    @media (max-width:700px){.player-controls .hide-xs{display:none}.player-vol{width:70px}.player-time{min-width:auto}}
     @media (max-width:700px){.stream-row{grid-template-columns:1fr}.stream-actions{justify-content:stretch}.stream-actions .btn{flex:1}}
     .disclaimer{margin:.55rem 0 0;font-size:.72rem;color:var(--muted);line-height:1.4}
     .global-error-badge{position:fixed;left:50%;top:calc(12px + var(--safe-t));transform:translateX(-50%);z-index:100;width:min(920px,calc(100% - 1.25rem));padding:.85rem 1rem;border-radius:14px;border:1px solid rgba(255,107,122,.55);background:rgba(40,12,16,.96);box-shadow:0 18px 40px rgba(0,0,0,.45);color:#ffd6db;backdrop-filter:blur(10px)}
@@ -300,31 +384,33 @@
           <div class="field"><label for="yearTo" data-i18n="yearTo">Year to</label><input id="yearTo" type="number" min="1880" max="2100" /></div>
         </div>
 
-        <div class="toolbar-row hidden toolbar-card" id="discoverToolbar">
-          <div class="field"><label for="discType" data-i18n="type">Type</label>
-            <select id="discType"><option value="movie" data-i18n="movies">Movies</option><option value="series" data-i18n="series">Series</option></select>
+        <div class="hidden toolbar-card" id="discoverToolbar">
+          <div class="discover-bar">
+            <div class="field"><label for="discType" data-i18n="type">Type</label>
+              <select id="discType"><option value="movie" data-i18n="movies">Movies</option><option value="series" data-i18n="series">Series</option></select>
+            </div>
+            <div class="field"><label for="discCatalog" data-i18n="catalog">Catalog</label>
+              <select id="discCatalog">
+                <option value="top" data-i18n="popular">Popular</option>
+                <option value="year" data-i18n="newByYear">New / by year</option>
+                <option value="imdbRating" data-i18n="featured">Featured (IMDb)</option>
+              </select>
+            </div>
+            <div class="field"><label for="discYear" data-i18n="year">Year</label>
+              <select id="discYear"></select>
+            </div>
+            <div class="field"><label for="discGenre" data-i18n="genre">Genre</label>
+              <select id="discGenre"><option value="" data-i18n="any">Any</option>
+                <option>Action</option><option>Adventure</option><option>Animation</option><option>Biography</option>
+                <option>Comedy</option><option>Crime</option><option>Documentary</option><option>Drama</option>
+                <option>Family</option><option>Fantasy</option><option>History</option><option>Horror</option>
+                <option>Mystery</option><option>Romance</option><option>Sci-Fi</option><option>Sport</option>
+                <option>Thriller</option><option>War</option><option>Western</option>
+              </select>
+            </div>
+            <button type="button" class="btn cyan" id="loadDiscover" data-i18n="loadCatalog">Load catalog</button>
           </div>
-          <div class="field"><label for="discCatalog" data-i18n="catalog">Catalog</label>
-            <select id="discCatalog">
-              <option value="top" data-i18n="popular">Popular</option>
-              <option value="year" data-i18n="newByYear">New / by year</option>
-              <option value="imdbRating" data-i18n="featured">Featured (IMDb)</option>
-            </select>
-          </div>
-          <div class="field hint"><label for="discYear" data-i18n="year">Year</label>
-            <select id="discYear"></select>
-            <small id="yearHint" data-i18n="yearHintFilter">Filters results by year</small>
-          </div>
-          <div class="field"><label for="discGenre" data-i18n="genre">Genre</label>
-            <select id="discGenre"><option value="" data-i18n="any">Any</option>
-              <option>Action</option><option>Adventure</option><option>Animation</option><option>Biography</option>
-              <option>Comedy</option><option>Crime</option><option>Documentary</option><option>Drama</option>
-              <option>Family</option><option>Fantasy</option><option>History</option><option>Horror</option>
-              <option>Mystery</option><option>Romance</option><option>Sci-Fi</option><option>Sport</option>
-              <option>Thriller</option><option>War</option><option>Western</option>
-            </select>
-          </div>
-          <button type="button" class="btn cyan" id="loadDiscover" data-i18n="loadCatalog">Load catalog</button>
+          <p class="toolbar-hint" id="yearHint" data-i18n="yearHintFilter">Optional filter on results</p>
         </div>
 
         <div class="toolbar-row hidden" id="searchToolbar">
@@ -357,12 +443,19 @@
             <button type="button" class="btn ghost sm" id="refreshLib" data-i18n="refresh">Refresh</button>
             <button type="button" class="btn ghost sm" id="randomPick" data-i18n="surpriseMe">Surprise me</button>
             <button type="button" class="btn ghost sm" id="onlyNotInLib" data-i18n="notInLibrary">Not in library</button>
+            <button type="button" class="btn ghost sm" id="onlyFavorites" data-i18n="favorites">Favorites</button>
+            <button type="button" class="btn ghost sm" id="densityToggle" data-i18n="compact">Compact</button>
             <button type="button" class="btn ghost sm" id="loadMore" data-i18n="loadMore">Load more</button>
+            <button type="button" class="btn ghost sm" id="showShortcuts" title="?">?</button>
           </div>
         </div>
       </div>
 
       <div class="quick-bar" id="quickBar"></div>
+      <div id="watchProgress" class="progress-ring hidden" aria-live="polite"></div>
+      <div id="spotlight" class="spotlight hidden" role="button" tabindex="0"></div>
+      <div id="recentsShelf" class="shelf hidden"></div>
+      <div id="favoritesShelf" class="shelf hidden"></div>
 
       <div class="meta-bar"><div id="resultMeta"></div><div id="sortMeta" class="muted"></div></div>
       <div id="content"></div>
@@ -370,6 +463,23 @@
       <div id="appError" class="error hidden"></div>
       <footer class="footer" id="creditApp"></footer>
     </section>
+  </div>
+
+  <button type="button" class="fab-top" id="fabTop" aria-label="Back to top">↑</button>
+  <div id="shortcutsModal" class="shortcuts hidden" role="dialog" aria-modal="true" aria-labelledby="shortcutsTitle">
+    <div class="shortcuts-panel">
+      <h3 id="shortcutsTitle" data-i18n="shortcutsTitle">Keyboard shortcuts</h3>
+      <dl>
+        <div><span data-i18n="shortcutSearch">Focus search</span><kbd>/</kbd></div>
+        <div><span data-i18n="shortcutSurprise">Surprise me</span><kbd>R</kbd></div>
+        <div><span data-i18n="shortcutFav">Toggle favorites filter</span><kbd>F</kbd></div>
+        <div><span data-i18n="shortcutLibrary">My library</span><kbd>1</kbd></div>
+        <div><span data-i18n="shortcutDiscover">Discover</span><kbd>2</kbd></div>
+        <div><span data-i18n="shortcutSearchTab">Search tab</span><kbd>3</kbd></div>
+        <div><span data-i18n="shortcutHelp">This help</span><kbd>?</kbd></div>
+        <div><span data-i18n="shortcutClose">Close panels</span><kbd>Esc</kbd></div>
+      </dl>
+    </div>
   </div>
 
   <nav class="mobile-nav" id="mobileNav" aria-label="Primary">
@@ -380,6 +490,7 @@
 
   <div id="modalRoot" class="modal-back hidden" role="dialog" aria-modal="true"></div>
   <div id="streamsRoot" class="modal-back hidden" role="dialog" aria-modal="true"></div>
+  <div id="playerRoot" class="player-back hidden" role="dialog" aria-modal="true" aria-label="Video player"></div>
   <div id="toast" class="toast hidden"></div>
 
   <div id="globalErrorBadge" class="global-error-badge hidden" role="alert" aria-live="assertive">
@@ -425,7 +536,7 @@
     const API="https://api.strem.io/api", META="https://cinemeta-live.strem.io/meta", CATALOG="https://v3-cinemeta.strem.io/catalog";
     const TORRENTIO="https://torrentio.strem.fun";
     const AUTHOR={name:"Leandro Carlini Mingorance", titleKey:"engineer", url:"https://lcarlini.github.io/lcarlini/"};
-    const BUILD_ID="2026-07-17-r3";
+    const BUILD_ID="2026-07-17-r5";
 
     /* Separate assignments avoid "Unexpected identifier 'pt'" if a comma is ever missing between locales. */
     const I18N = Object.create(null);
@@ -469,7 +580,25 @@
         copyMagnet:"Copy magnet", openMagnet:"Open / download", copyLink:"Copy link", openLink:"Open link",
         season:"Season", episode:"Episode", loadEpisode:"Load episode",
         torrentioNote:"Links from the unofficial Torrentio addon (torrentio.strem.fun). Use only content you have rights to access. StremioLens does not host files.",
-        needImdb:"Torrentio needs an IMDb id (tt...).", seriesEpisodeHint:"For series, set season & episode (e.g. 1 / 1)."
+        needImdb:"Torrentio needs an IMDb id (tt...).", seriesEpisodeHint:"For series, set season & episode (e.g. 1 / 1).",
+        favorites:"Favorites", compact:"Compact", cozy:"Cozy", shortcutsTitle:"Keyboard shortcuts",
+        shortcutSearch:"Focus search", shortcutSurprise:"Surprise me", shortcutFav:"Toggle favorites filter",
+        shortcutLibrary:"My library", shortcutDiscover:"Discover", shortcutSearchTab:"Search tab",
+        shortcutHelp:"This help", shortcutClose:"Close panels",
+        spotlightPick:"Tonight's pick", openDetails:"Open details", addFavorite:"Favorite", remFavorite:"Unfavorite",
+        recents:"Recently viewed", favoritesShelf:"Your favorites", watchedOf:"{watched} of {total} watched",
+        onlyFavorites:"Showing favorites", favAdded:"Saved to favorites", favRemoved:"Removed from favorites",
+        decades:"Decades", clearYear:"Any year",
+        play:"Play", playing:"Playing…", playerClose:"Close player", playerPause:"Pause", playerPlay:"Play",
+        playerMute:"Mute", playerUnmute:"Unmute", playerFullscreen:"Fullscreen", playerPip:"Picture in picture",
+        playerSpeed:"Speed", playerQuality:"Stream quality", playerFiles:"Video files", playerStats:"Stats",
+        playerBuffering:"Buffering stream…", playerFindingPeers:"Finding peers & preparing stream…",
+        playerReady:"Stream ready", playerError:"Playback error", playerHttp:"Direct stream", playerTorrent:"Torrent stream",
+        playerHls:"HLS stream", playerNoPlayable:"No playable source on this stream.",
+        playerCodecHint:"4K / HDR / Atmos depend on your browser, GPU, and display. HEVC & Dolby Vision may need Edge/Safari or a hardware decoder.",
+        playerPeers:"Peers", playerDown:"Down", playerProgress:"Progress", playerRes:"Resolution",
+        playerBuffer:"Buffer", playerMode:"Mode", playerHdrNote:"HDR flagged — tone-mapped if display/OS doesn't pass HDR through.",
+        playerSwitch:"Switch stream", playerExternal:"Open externally", playerLoadingLibs:"Loading playback engine…"
     };
     I18N.pt = {
         tagline:"para sua conta Stremio", pillSecure:"Credenciais nunca salvas", pillUnofficial:"Não oficial",
@@ -511,7 +640,25 @@
         copyMagnet:"Copiar magnet", openMagnet:"Abrir / baixar", copyLink:"Copiar link", openLink:"Abrir link",
         season:"Temporada", episode:"Episódio", loadEpisode:"Carregar episódio",
         torrentioNote:"Links do addon não oficial Torrentio (torrentio.strem.fun). Use apenas conteúdo que você tem direito de acessar. O StremioLens não hospeda arquivos.",
-        needImdb:"Torrentio precisa de um id IMDb (tt...).", seriesEpisodeHint:"Para séries, informe temporada e episódio (ex.: 1 / 1)."
+        needImdb:"Torrentio precisa de um id IMDb (tt...).", seriesEpisodeHint:"Para séries, informe temporada e episódio (ex.: 1 / 1).",
+        favorites:"Favoritos", compact:"Compacto", cozy:"Confortável", shortcutsTitle:"Atalhos do teclado",
+        shortcutSearch:"Focar busca", shortcutSurprise:"Me surpreenda", shortcutFav:"Alternar favoritos",
+        shortcutLibrary:"Minha biblioteca", shortcutDiscover:"Descobrir", shortcutSearchTab:"Aba busca",
+        shortcutHelp:"Esta ajuda", shortcutClose:"Fechar painéis",
+        spotlightPick:"Escolha da noite", openDetails:"Abrir detalhes", addFavorite:"Favoritar", remFavorite:"Desfavoritar",
+        recents:"Vistos recentemente", favoritesShelf:"Seus favoritos", watchedOf:"{watched} de {total} assistidos",
+        onlyFavorites:"Mostrando favoritos", favAdded:"Salvo nos favoritos", favRemoved:"Removido dos favoritos",
+        decades:"Décadas", clearYear:"Qualquer ano",
+        play:"Reproduzir", playing:"Reproduzindo…", playerClose:"Fechar player", playerPause:"Pausar", playerPlay:"Reproduzir",
+        playerMute:"Mudo", playerUnmute:"Som", playerFullscreen:"Tela cheia", playerPip:"Picture in picture",
+        playerSpeed:"Velocidade", playerQuality:"Qualidade do stream", playerFiles:"Arquivos de vídeo", playerStats:"Estatísticas",
+        playerBuffering:"Bufferizando stream…", playerFindingPeers:"Procurando peers e preparando stream…",
+        playerReady:"Stream pronto", playerError:"Erro de reprodução", playerHttp:"Stream direto", playerTorrent:"Stream torrent",
+        playerHls:"Stream HLS", playerNoPlayable:"Nenhuma fonte reproduzível neste stream.",
+        playerCodecHint:"4K / HDR / Atmos dependem do navegador, GPU e display. HEVC e Dolby Vision podem exigir Edge/Safari ou decoder de hardware.",
+        playerPeers:"Peers", playerDown:"Down", playerProgress:"Progresso", playerRes:"Resolução",
+        playerBuffer:"Buffer", playerMode:"Modo", playerHdrNote:"HDR detectado — com tone-mapping se o display/SO não passar HDR.",
+        playerSwitch:"Trocar stream", playerExternal:"Abrir externamente", playerLoadingLibs:"Carregando motor de reprodução…"
     };
     I18N.es = {
         tagline:"para tu cuenta de Stremio", pillSecure:"Credenciales nunca guardadas", pillUnofficial:"No oficial",
@@ -553,7 +700,25 @@
         copyMagnet:"Copiar magnet", openMagnet:"Abrir / descargar", copyLink:"Copiar enlace", openLink:"Abrir enlace",
         season:"Temporada", episode:"Episodio", loadEpisode:"Cargar episodio",
         torrentioNote:"Enlaces del addon no oficial Torrentio (torrentio.strem.fun). Úsalo solo con contenido que tengas derecho a acceder. StremioLens no aloja archivos.",
-        needImdb:"Torrentio necesita un id IMDb (tt...).", seriesEpisodeHint:"Para series, indica temporada y episodio (ej.: 1 / 1)."
+        needImdb:"Torrentio necesita un id IMDb (tt...).", seriesEpisodeHint:"Para series, indica temporada y episodio (ej.: 1 / 1).",
+        favorites:"Favoritos", compact:"Compacto", cozy:"Cómodo", shortcutsTitle:"Atajos de teclado",
+        shortcutSearch:"Enfocar búsqueda", shortcutSurprise:"Sorpréendeme", shortcutFav:"Alternar favoritos",
+        shortcutLibrary:"Mi biblioteca", shortcutDiscover:"Descubrir", shortcutSearchTab:"Pestaña buscar",
+        shortcutHelp:"Esta ayuda", shortcutClose:"Cerrar paneles",
+        spotlightPick:"Elegido de la noche", openDetails:"Abrir detalles", addFavorite:"Favorito", remFavorite:"Quitar favorito",
+        recents:"Vistos recientemente", favoritesShelf:"Tus favoritos", watchedOf:"{watched} de {total} vistos",
+        onlyFavorites:"Mostrando favoritos", favAdded:"Guardado en favoritos", favRemoved:"Eliminado de favoritos",
+        decades:"Décadas", clearYear:"Cualquier año",
+        play:"Reproducir", playing:"Reproduciendo…", playerClose:"Cerrar reproductor", playerPause:"Pausa", playerPlay:"Reproducir",
+        playerMute:"Silenciar", playerUnmute:"Sonido", playerFullscreen:"Pantalla completa", playerPip:"Picture in picture",
+        playerSpeed:"Velocidad", playerQuality:"Calidad del stream", playerFiles:"Archivos de vídeo", playerStats:"Estadísticas",
+        playerBuffering:"Cargando buffer…", playerFindingPeers:"Buscando peers y preparando stream…",
+        playerReady:"Stream listo", playerError:"Error de reproducción", playerHttp:"Stream directo", playerTorrent:"Stream torrent",
+        playerHls:"Stream HLS", playerNoPlayable:"No hay fuente reproducible en este stream.",
+        playerCodecHint:"4K / HDR / Atmos dependen del navegador, GPU y pantalla. HEVC y Dolby Vision pueden requerir Edge/Safari o decodificador de hardware.",
+        playerPeers:"Peers", playerDown:"Down", playerProgress:"Progreso", playerRes:"Resolución",
+        playerBuffer:"Buffer", playerMode:"Modo", playerHdrNote:"HDR detectado — tone-mapping si la pantalla/SO no pasa HDR.",
+        playerSwitch:"Cambiar stream", playerExternal:"Abrir externamente", playerLoadingLibs:"Cargando motor de reproducción…"
     };
 
     let lang = "en";
@@ -588,7 +753,7 @@
       if (!els.appView.classList.contains("hidden")) render();
     }
 
-    const session = { authKey:null, email:null, library:[], catalog:[], catalogRaw:[], mode:"library", view:"posters", skip:0, onlyMissing:false };
+    const session = { authKey:null, email:null, library:[], catalog:[], catalogRaw:[], mode:"library", view:"posters", skip:0, onlyMissing:false, onlyFavorites:false, compact:false, decade:null, recents:[], favorites:[] };
     const $ = (id) => document.getElementById(id);
     const els = {
       loginView:$("loginView"), appView:$("appView"), loginForm:$("loginForm"), email:$("email"), password:$("password"),
@@ -599,13 +764,48 @@
       statsPanel:$("statsPanel"), appError:$("appError"), libraryToolbar:$("libraryToolbar"), discoverToolbar:$("discoverToolbar"),
       searchToolbar:$("searchToolbar"), discType:$("discType"), discCatalog:$("discCatalog"), discYear:$("discYear"), discGenre:$("discGenre"),
       searchCatalog:$("searchCatalog"), searchType:$("searchType"), modalRoot:$("modalRoot"), streamsRoot:$("streamsRoot"), toast:$("toast"), yearHint:$("yearHint"),
+      spotlight:$("spotlight"), recentsShelf:$("recentsShelf"), favoritesShelf:$("favoritesShelf"), watchProgress:$("watchProgress"),
+      fabTop:$("fabTop"), shortcutsModal:$("shortcutsModal"), playerRoot:$("playerRoot"),
     };
+    try {
+      const fav = JSON.parse(localStorage.getItem("stremiolens_favorites") || "[]");
+      if (Array.isArray(fav)) session.favorites = fav.filter((x) => x && x.id).slice(0, 40);
+      const recent = JSON.parse(sessionStorage.getItem("stremiolens_recents") || "[]");
+      if (Array.isArray(recent)) session.recents = recent.filter((x) => x && x.id).slice(0, 16);
+      session.compact = localStorage.getItem("stremiolens_compact") === "1";
+    } catch (_) {}
     const years=[]; for(let y=2026;y>=1920;y--) years.push(y);
     const escapeHtml=v=>String(v).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
     const escapeAttr=v=>escapeHtml(v).replaceAll("'","&#39;");
+    function isFavorite(id){ return session.favorites.some((f) => f.id === id); }
+    function saveFavorites(){ try { localStorage.setItem("stremiolens_favorites", JSON.stringify(session.favorites.slice(0, 40))); } catch (_) {} }
+    function saveRecents(){ try { sessionStorage.setItem("stremiolens_recents", JSON.stringify(session.recents.slice(0, 16))); } catch (_) {} }
+    function toggleFavorite(item){
+      if (!item?.id) return;
+      const idx = session.favorites.findIndex((f) => f.id === item.id);
+      if (idx >= 0) { session.favorites.splice(idx, 1); toast(t("favRemoved")); }
+      else {
+        session.favorites.unshift({ id:item.id, name:item.name, poster:item.poster||"", type:item.type, year:item.year??null, ranking:item.ranking??null });
+        session.favorites = session.favorites.slice(0, 40);
+        toast(t("favAdded"));
+      }
+      saveFavorites();
+      render();
+    }
+    function pushRecent(item){
+      if (!item?.id) return;
+      session.recents = [{ id:item.id, name:item.name, poster:item.poster||"", type:item.type, year:item.year??null, ranking:item.ranking??null }, ...session.recents.filter((r) => r.id !== item.id)].slice(0, 16);
+      saveRecents();
+    }
+    function itemStub(stub){
+      return currentSource().find((i) => i.id === stub.id) || session.library.find((i) => i.id === stub.id) || stub;
+    }
     function rebuildYearOptions(preserve) {
-      const cur = preserve || els.discYear.value || "2025";
       const catalog = els.discCatalog.value;
+      const raw = preserve === undefined ? els.discYear.value : preserve;
+      const cur = (raw === "" || raw == null)
+        ? (catalog === "year" ? "2025" : "")
+        : String(raw);
       const anyOpt = catalog === "year" ? "" : `<option value="">${escapeHtml(t("yearAny"))}</option>`;
       els.discYear.innerHTML = anyOpt + years.map((y)=>`<option value="${y}">${y}</option>`).join("");
       if ([...els.discYear.options].some((o) => o.value === cur)) els.discYear.value = cur;
@@ -614,7 +814,6 @@
     }
     function syncDiscoverControls() {
       const catalog = els.discCatalog.value;
-      // Year is ALWAYS enabled. For "year" catalog it drives the API; otherwise it filters client-side.
       els.discYear.disabled = false;
       els.discGenre.disabled = catalog === "year";
       if (catalog === "year" && !els.discYear.value) els.discYear.value = "2025";
@@ -631,6 +830,7 @@
     function toast(msg){ els.toast.textContent=msg; show(els.toast); clearTimeout(toast._t); toast._t=setTimeout(()=>hide(els.toast),2600); }
     function setProgress(text,ratio){ show(els.loginProgress); els.loginStatus.textContent=text; els.loginBar.style.width=`${Math.max(0,Math.min(100,ratio*100))}%`; }
     function posterUrl(id,poster){ if(poster) return poster; if(id&&String(id).startsWith("tt")) return `https://images.metahub.space/poster/small/${id}/img`; return ""; }
+    function skeletonHtml(n=10){ return `<div class="skeleton-grid" aria-hidden="true">${Array.from({length:n},()=>`<div class="skeleton"></div>`).join("")}</div>`; }
 
     async function apiPost(path,body){
       const res=await fetch(`${API}/${path}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
@@ -727,7 +927,9 @@
           items = items.filter((i) => i.year === y);
         }
         if (session.onlyMissing) items = items.filter((i) => !libraryIds().has(i.id));
+        if (session.decade != null) items = items.filter((i) => i.year != null && Math.floor(i.year / 10) * 10 === session.decade);
       }
+      if (session.onlyFavorites) items = items.filter((i) => isFavorite(i.id));
       const desc=f.sortDir==="desc";
       items.sort((a,b)=>{
         if(f.sortBy==="name") return desc?b.name.localeCompare(a.name):a.name.localeCompare(b.name);
@@ -746,32 +948,140 @@
     }
     function render(){
       const items=visibleItems(); const ids=libraryIds(); items.forEach(i=>{i.inLibrary=ids.has(i.id);});
-      els.resultMeta.textContent=t("itemsShown",{n:items.length,mode:t(`mode_${session.mode}`)}) + (session.onlyMissing && session.mode!=="library" ? ` · ${t("onlyMissing")}` : "");
+      let meta = t("itemsShown",{n:items.length,mode:t(`mode_${session.mode}`)});
+      if (session.onlyMissing && session.mode!=="library") meta += ` · ${t("onlyMissing")}`;
+      if (session.onlyFavorites) meta += ` · ${t("onlyFavorites")}`;
+      els.resultMeta.textContent = meta;
       els.sortMeta.textContent=t("viewMeta",{view:t(session.view),sort:els.sortBy.value,dir:els.sortDir.value});
       $("onlyNotInLib")?.classList.toggle("active", session.onlyMissing);
+      $("onlyFavorites")?.classList.toggle("active", session.onlyFavorites);
+      $("densityToggle")?.classList.toggle("active", session.compact);
+      if ($("densityToggle")) $("densityToggle").textContent = session.compact ? t("cozy") : t("compact");
+      renderWatchProgress();
+      renderSpotlight(items);
+      renderShelves();
       if(session.view==="table") renderTable(items); else if(session.view==="list") renderList(items); else renderPosters(items);
       if(!els.statsPanel.classList.contains("hidden")) renderStats(items);
       renderQuickBar(items);
     }
+    function renderWatchProgress(){
+      const el = els.watchProgress;
+      if (!el) return;
+      if (session.mode !== "library" || !session.library.length) { hide(el); el.innerHTML = ""; return; }
+      const total = session.library.length;
+      const watched = session.library.filter((i) => i.watched).length;
+      const pct = Math.round((watched / Math.max(total, 1)) * 100);
+      el.innerHTML = `<i><b style="width:${pct}%"></b></i><span>${escapeHtml(t("watchedOf", { watched, total }))} · ${pct}%</span>`;
+      show(el);
+    }
+    function renderSpotlight(items){
+      const el = els.spotlight;
+      if (!el) return;
+      if (!items.length || session.view === "table") { hide(el); el.innerHTML = ""; return; }
+      const pick = items.slice().sort((a, b) => (b.ranking ?? -1) - (a.ranking ?? -1))[0] || items[0];
+      const poster = pick.poster || "";
+      el.innerHTML = `
+        <div class="spotlight-bg" style="background-image:url('${escapeAttr(poster)}')"></div>
+        <div class="spotlight-body">
+          <div class="spotlight-kicker">${escapeHtml(t("spotlightPick"))}</div>
+          <h3>${escapeHtml(pick.name)}</h3>
+          <div class="meta">
+            <span>${escapeHtml(pick.type)}</span>
+            <span>${escapeHtml(pick.year ?? "—")}</span>
+            <span class="rank">${pick.ranking == null ? "—" : pick.ranking.toFixed(1)}</span>
+            ${pick.inLibrary ? `<span>${escapeHtml(t("inLibrary"))}</span>` : ""}
+          </div>
+          <div class="actions">
+            <button type="button" class="btn sm" id="spotOpen">${escapeHtml(t("openDetails"))}</button>
+            <button type="button" class="btn ghost sm" id="spotFav">${escapeHtml(isFavorite(pick.id) ? t("remFavorite") : t("addFavorite"))}</button>
+          </div>
+        </div>`;
+      show(el);
+      const open = () => openDetails(pick);
+      el.onclick = (e) => { if (e.target.closest("button")) return; open(); };
+      el.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } };
+      $("spotOpen").onclick = (e) => { e.stopPropagation(); open(); };
+      $("spotFav").onclick = (e) => { e.stopPropagation(); toggleFavorite(pick); };
+    }
+    function renderShelf(el, title, stubs){
+      if (!el) return;
+      if (!stubs.length) { hide(el); el.innerHTML = ""; return; }
+      el.innerHTML = `<div class="shelf-head"><h3>${escapeHtml(title)}</h3></div>
+        <div class="shelf-rail">${stubs.map((s, idx) => `<article class="shelf-card" data-idx="${idx}">
+          <img src="${escapeAttr(s.poster || "")}" alt="" loading="lazy" onerror="this.style.opacity=.2" />
+          <span>${escapeHtml(s.name)}</span>
+        </article>`).join("")}</div>`;
+      el.querySelectorAll(".shelf-card").forEach((card) => {
+        card.addEventListener("click", () => openDetails(itemStub(stubs[Number(card.dataset.idx)])));
+      });
+      show(el);
+    }
+    function renderShelves(){
+      renderShelf(els.recentsShelf, t("recents"), session.recents);
+      renderShelf(els.favoritesShelf, t("favoritesShelf"), session.favorites);
+    }
     function renderQuickBar(items) {
       const bar = $("quickBar");
       if (!bar) return;
-      if (session.mode === "library" || !items.length) { bar.innerHTML = ""; return; }
-      const years = [...new Set(items.map((i) => i.year).filter(Boolean))].sort((a, b) => b - a).slice(0, 8);
-      bar.innerHTML = years.map((y) => `<button type="button" class="chip ${String(els.discYear.value)===String(y)?"active":""}" data-year="${y}">${y}</button>`).join("");
-      bar.querySelectorAll("button[data-year]").forEach((btn) => btn.addEventListener("click", () => {
+      const chips = [];
+      if (session.mode !== "library") {
+        chips.push(`<button type="button" class="chip ${!els.discYear.value?"active":""}" data-year="">${escapeHtml(t("clearYear"))}</button>`);
+        const yearList = [...new Set(items.map((i) => i.year).filter(Boolean))].sort((a, b) => b - a).slice(0, 6);
+        yearList.forEach((y) => chips.push(`<button type="button" class="chip ${String(els.discYear.value)===String(y)?"active":""}" data-year="${y}">${y}</button>`));
+      }
+      const genres = [...new Set(items.flatMap((i) => i.genres || []))].sort((a, b) => a.localeCompare(b)).slice(0, 8);
+      genres.forEach((g) => {
+        const active = session.mode === "library" ? els.genreFilter.value === g : els.discGenre.value === g;
+        chips.push(`<button type="button" class="chip ${active?"active":""}" data-genre="${escapeAttr(g)}">${escapeHtml(g)}</button>`);
+      });
+      const decades = [...new Set(items.map((i) => i.year).filter(Boolean).map((y) => Math.floor(y / 10) * 10))].sort((a, b) => b - a).slice(0, 5);
+      decades.forEach((d) => chips.push(`<button type="button" class="chip ${session.decade===d?"active":""}" data-decade="${d}">${d}s</button>`));
+      bar.innerHTML = chips.join("");
+      bar.querySelectorAll("[data-year]").forEach((btn) => btn.addEventListener("click", () => {
+        session.decade = null;
         els.discYear.value = btn.dataset.year;
+        render();
+      }));
+      bar.querySelectorAll("[data-genre]").forEach((btn) => btn.addEventListener("click", () => {
+        if (session.mode === "library") {
+          els.genreFilter.value = els.genreFilter.value === btn.dataset.genre ? "" : btn.dataset.genre;
+        } else {
+          els.discGenre.value = els.discGenre.value === btn.dataset.genre ? "" : btn.dataset.genre;
+          if (els.discCatalog.value !== "year") loadDiscover(false).catch((err) => window.__stremioLensShowError?.(err?.message || String(err), "discover"));
+          else render();
+          return;
+        }
+        render();
+      }));
+      bar.querySelectorAll("[data-decade]").forEach((btn) => btn.addEventListener("click", () => {
+        const d = Number(btn.dataset.decade);
+        if (session.mode === "library") {
+          els.yearFrom.value = String(d);
+          els.yearTo.value = String(d + 9);
+          session.decade = null;
+        } else {
+          session.decade = session.decade === d ? null : d;
+          els.discYear.value = "";
+        }
         render();
       }));
     }
     function renderPosters(items){
       if(!items.length){ els.content.innerHTML=`<div class="empty"><strong>${escapeHtml(t("noTitles"))}</strong><span>${escapeHtml(t("yearHintFilter"))}</span></div>`; return; }
-      els.content.innerHTML=`<div class="poster-grid">${items.map((item,idx)=>`<article class="card" data-idx="${idx}">
+      els.content.innerHTML=`<div class="poster-grid${session.compact?" compact":""}">${items.map((item,idx)=>`<article class="card${isFavorite(item.id)?" fav":""}" data-idx="${idx}">
         ${item.inLibrary?`<span class="badge">${escapeHtml(t("inLibrary"))}</span>`:""}
+        ${item.ranking!=null?`<span class="rank-pill">${item.ranking.toFixed(1)}</span>`:""}
         <img src="${escapeAttr(item.poster||"")}" alt="" loading="lazy" onerror="this.style.opacity=.2" />
-        <div class="cap"><strong>${escapeHtml(item.name)}</strong><div class="meta"><span>${escapeHtml(item.year??"—")}</span><span>${item.ranking==null?"—":item.ranking.toFixed(1)}</span></div></div>
+        <div class="hover-actions">
+          <button type="button" class="btn ghost sm card-fav">${escapeHtml(isFavorite(item.id)?t("remFavorite"):t("addFavorite"))}</button>
+        </div>
+        <div class="cap"><strong>${escapeHtml(item.name)}</strong><div class="meta"><span>${escapeHtml(item.year??"—")}</span><span>${escapeHtml(item.type)}</span></div></div>
       </article>`).join("")}</div>`;
-      els.content.querySelectorAll(".card").forEach(el=>el.addEventListener("click",()=>openDetails(items[Number(el.dataset.idx)])));
+      els.content.querySelectorAll(".card").forEach(el=>{
+        const item = items[Number(el.dataset.idx)];
+        el.addEventListener("click",(e)=>{ if (e.target.closest(".card-fav")) return; openDetails(item); });
+        el.querySelector(".card-fav")?.addEventListener("click",(e)=>{ e.stopPropagation(); toggleFavorite(item); });
+      });
     }
     function renderList(items){
       if(!items.length){ els.content.innerHTML=`<p class="muted">${escapeHtml(t("noTitles"))}</p>`; return; }
@@ -821,12 +1131,16 @@
         <div class="stat"><h3>${escapeHtml(t("statsGenres"))}</h3><ul>${list(Object.entries(byGenre).sort((a,b)=>b[1]-a[1]).slice(0,8))}</ul></div>`;
     }
     async function openDetails(item){
+      pushRecent(item);
       show(els.modalRoot); els.modalRoot.innerHTML=`<div class="modal"><div class="modal-grid"><p class="muted">${escapeHtml(t("loadingDetails"))}</p></div></div>`;
       let detail=item;
       if(item.id&&(item.type==="movie"||item.type==="series")){ const meta=await fetchMeta(item.id,item.type); if(meta) detail={...item,...meta,poster:meta.poster||item.poster,inLibrary:libraryIds().has(item.id)}; }
+      pushRecent(detail);
+      renderShelves();
       const trailer=(detail.trailers||[]).find(x=>x.source||x.ytId||x.url); const yt=trailer?.source||trailer?.ytId;
       const trailerUrl=yt?`https://www.youtube.com/watch?v=${yt}`:(trailer?.url||null);
       const imdb=detail.id?.startsWith("tt")?`https://www.imdb.com/title/${detail.id}/`:null;
+      const fav = isFavorite(detail.id);
       els.modalRoot.innerHTML=`<div class="modal"><div class="modal-grid">
         <img class="poster" src="${escapeAttr(detail.poster||"")}" alt="" onerror="this.style.opacity=.25" />
         <div>
@@ -838,6 +1152,7 @@
           <p class="muted" style="font-size:.84rem"><strong style="color:var(--ink)">${escapeHtml(t("director"))}:</strong> ${escapeHtml((detail.director||[]).join(", ")||"—")}</p>
           <div class="actions">
             ${detail.inLibrary?`<button type="button" class="btn danger sm" id="btnRemoveLib">${escapeHtml(t("remLib"))}</button>`:`<button type="button" class="btn ok sm" id="btnAddLib">${escapeHtml(t("addLib"))}</button>`}
+            <button type="button" class="btn ghost sm" id="btnFav">${escapeHtml(fav?t("remFavorite"):t("addFavorite"))}</button>
             ${imdb?`<a class="btn ghost sm" href="${imdb}" target="_blank" rel="noopener noreferrer">IMDb</a>`:""}
             ${trailerUrl?`<a class="btn ghost sm" href="${escapeAttr(trailerUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(t("trailer"))}</a>`:""}
             ${(detail.id||"").startsWith("tt")?`<button type="button" class="btn cyan sm" id="btnTorrentio">${escapeHtml(t("torrentio"))}</button>`:""}
@@ -848,6 +1163,10 @@
         </div></div></div>`;
       $("btnCloseModal").onclick=closeModal; els.modalRoot.onclick=e=>{ if(e.target===els.modalRoot) closeModal(); };
       $("btnTorrentio")?.addEventListener("click", () => openTorrentioModal(detail));
+      $("btnFav")?.addEventListener("click", () => {
+        toggleFavorite(detail);
+        $("btnFav").textContent = isFavorite(detail.id) ? t("remFavorite") : t("addFavorite");
+      });
       $("btnCopyId")?.addEventListener("click", async () => {
         try { await navigator.clipboard.writeText(detail.id || detail.name); toast(t("copied")); } catch (_) { toast(detail.id || detail.name); }
       });
@@ -880,11 +1199,45 @@
     function parseQuality(name="") {
       const n = String(name).toLowerCase();
       if (/\b(2160p|4k|uhd)\b/.test(n)) return "2160p";
+      if (/\b1440p\b/.test(n)) return "1440p";
       if (/\b1080p\b/.test(n)) return "1080p";
       if (/\b720p\b/.test(n)) return "720p";
       if (/\b480p\b/.test(n)) return "480p";
       if (/\b360p\b/.test(n)) return "360p";
       return "other";
+    }
+    function parseMediaFlags(blob="") {
+      const n = String(blob);
+      const lower = n.toLowerCase();
+      const flags = [];
+      const hdr = /\b(hdr10\+|hdr10|hdr|dolby[\s-]?vision|\bdv\b|hlg)\b/i.test(n);
+      const dv = /\b(dolby[\s-]?vision|\bdv\b)\b/i.test(n);
+      const atmos = /\b(atmos|truehd|dts-?hd|dts:x)\b/i.test(n);
+      const hevc = /\b(hevc|x265|h\.?265)\b/i.test(n);
+      const av1 = /\bav1\b/i.test(n);
+      const avc = /\b(x264|h\.?264|avc)\b/i.test(n);
+      const uhd = /\b(2160p|4k|uhd)\b/i.test(n);
+      const bit10 = /\b10[\s-]?bit\b/i.test(n);
+      if (uhd) flags.push({ key: "uhd", label: "4K UHD", cls: "uhd" });
+      if (dv) flags.push({ key: "dv", label: "Dolby Vision", cls: "hdr" });
+      else if (hdr) flags.push({ key: "hdr", label: /hdr10\+/i.test(n) ? "HDR10+" : /hdr10/i.test(n) ? "HDR10" : "HDR", cls: "hdr" });
+      if (atmos) flags.push({ key: "atmos", label: /atmos/i.test(n) ? "Atmos" : "HD Audio", cls: "atmos" });
+      if (hevc) flags.push({ key: "hevc", label: "HEVC", cls: "" });
+      if (av1) flags.push({ key: "av1", label: "AV1", cls: "" });
+      else if (avc) flags.push({ key: "avc", label: "AVC", cls: "" });
+      if (bit10) flags.push({ key: "10bit", label: "10-bit", cls: "" });
+      return {
+        flags,
+        hdr: !!(hdr || dv),
+        dolbyVision: !!dv,
+        atmos: !!atmos,
+        codec: hevc ? "hevc" : av1 ? "av1" : avc ? "avc" : null,
+        uhd: !!uhd,
+        isHls: /\.m3u8(\?|$)/i.test(lower) || /\bhls\b/i.test(lower),
+      };
+    }
+    function qualityRank(q) {
+      return ({ "2160p": 6, "1440p": 5, "1080p": 4, "720p": 3, "480p": 2, "360p": 1, other: 0 })[q] || 0;
     }
     function parseStreamMeta(stream) {
       const blob = `${stream.name || ""}\n${stream.title || ""}\n${stream.description || ""}`;
@@ -892,21 +1245,447 @@
       const sizeMatch = blob.match(/💾\s*([0-9.]+\s*[GMK]B)/i) || blob.match(/([0-9.]+\s*[GMK]B)/i);
       const sourceMatch = blob.match(/⚙️\s*([^\n]+)/);
       const quality = parseQuality(blob);
+      const media = parseMediaFlags(`${blob}\n${stream.url || ""}`);
       const lines = String(stream.title || stream.description || stream.name || "").split("\n").map((x) => x.trim()).filter(Boolean);
+      const fileIdx = stream.fileIdx != null ? Number(stream.fileIdx) : (stream.behaviorHints && stream.behaviorHints.fileIdx != null ? Number(stream.behaviorHints.fileIdx) : null);
       return {
         raw: stream,
         label: (stream.name || "").replace(/\n/g, " · ") || "Torrentio",
         title: lines[0] || stream.name || "Stream",
         detail: lines.slice(1).join(" · "),
         quality,
+        media,
         seeders: seedersMatch ? Number(seedersMatch[1]) : null,
         size: sizeMatch ? sizeMatch[1].replace(/\s+/g, " ") : null,
         source: sourceMatch ? sourceMatch[1].trim() : "Torrentio",
         magnet: magnetFromStream(stream),
         url: stream.url || null,
         infoHash: extractInfoHash(stream),
+        fileIdx: Number.isFinite(fileIdx) ? fileIdx : null,
       };
     }
+    function streamBadgesHtml(s) {
+      const bits = (s.media?.flags || []).map((f) => `<b class="${escapeAttr(f.cls || "")}">${escapeHtml(f.label)}</b>`).join("");
+      return bits ? `<div class="stream-badges">${bits}</div>` : "";
+    }
+
+    const player = {
+      open: false,
+      detail: null,
+      streams: [],
+      stream: null,
+      mode: null,
+      client: null,
+      torrent: null,
+      hls: null,
+      objectUrl: null,
+      statsTimer: null,
+      uiHideTimer: null,
+      libs: { wt: false, hls: false },
+    };
+
+    function loadScriptOnce(src, globalCheck) {
+      return new Promise((resolve, reject) => {
+        if (globalCheck()) return resolve();
+        const existing = document.querySelector(`script[data-sl-src="${src}"]`);
+        if (existing) {
+          existing.addEventListener("load", () => resolve());
+          existing.addEventListener("error", () => reject(new Error(`Failed ${src}`)));
+          return;
+        }
+        const s = document.createElement("script");
+        s.src = src;
+        s.async = true;
+        s.dataset.slSrc = src;
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error(`Failed to load ${src}`));
+        document.head.appendChild(s);
+      });
+    }
+    async function ensurePlayerLibs(needHls, needWt) {
+      const jobs = [];
+      if (needHls && !player.libs.hls) {
+        jobs.push(loadScriptOnce("https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js", () => !!window.Hls).then(() => { player.libs.hls = true; }));
+      }
+      if (needWt && !player.libs.wt) {
+        jobs.push(loadScriptOnce("https://cdn.jsdelivr.net/npm/webtorrent@1.9.7/webtorrent.min.js", () => !!window.WebTorrent).then(() => { player.libs.wt = true; }));
+      }
+      if (jobs.length) await Promise.all(jobs);
+    }
+    function formatBytes(n) {
+      if (!Number.isFinite(n) || n <= 0) return "0 B";
+      const u = ["B", "KB", "MB", "GB", "TB"];
+      let i = 0; let v = n;
+      while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; }
+      return `${v.toFixed(v >= 10 || i === 0 ? 0 : 1)} ${u[i]}`;
+    }
+    function formatSpeed(n) { return `${formatBytes(n)}/s`; }
+    function formatClock(sec) {
+      if (!Number.isFinite(sec) || sec < 0) return "0:00";
+      const s = Math.floor(sec % 60);
+      const m = Math.floor((sec / 60) % 60);
+      const h = Math.floor(sec / 3600);
+      return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${m}:${String(s).padStart(2, "0")}`;
+    }
+    function destroyPlayerEngine() {
+      clearInterval(player.statsTimer); player.statsTimer = null;
+      clearTimeout(player.uiHideTimer); player.uiHideTimer = null;
+      try { player.hls?.destroy(); } catch (_) {}
+      player.hls = null;
+      try {
+        if (player.torrent) player.client?.remove(player.torrent);
+      } catch (_) {}
+      player.torrent = null;
+      try { player.client?.destroy(); } catch (_) {}
+      player.client = null;
+      if (player.objectUrl) { try { URL.revokeObjectURL(player.objectUrl); } catch (_) {} player.objectUrl = null; }
+      const video = $("slVideo");
+      if (video) { video.removeAttribute("src"); video.load(); }
+    }
+    function closePlayer() {
+      if (!player.open) return;
+      destroyPlayerEngine();
+      player.open = false;
+      player.detail = null;
+      player.streams = [];
+      player.stream = null;
+      player.mode = null;
+      hide(els.playerRoot);
+      els.playerRoot.innerHTML = "";
+      document.body.style.overflow = "";
+    }
+    function setPlayerOverlay(html) {
+      const ov = $("slOverlay");
+      if (!ov) return;
+      if (!html) { ov.innerHTML = ""; ov.classList.add("hidden"); return; }
+      ov.classList.remove("hidden");
+      ov.innerHTML = html;
+    }
+    function playerOverlayMsg(title, body, spinner) {
+      setPlayerOverlay(`<div class="msg">${spinner ? `<div class="player-spinner"></div>` : ""}<strong>${escapeHtml(title)}</strong><p>${escapeHtml(body || "")}</p></div>`);
+    }
+    function updatePlayerStats() {
+      const el = $("slStats");
+      const video = $("slVideo");
+      if (!el || !video) return;
+      const s = player.stream;
+      const res = video.videoWidth ? `${video.videoWidth}×${video.videoHeight}` : "—";
+      let buffer = "—";
+      try {
+        if (video.buffered.length) {
+          const end = video.buffered.end(video.buffered.length - 1);
+          buffer = formatClock(Math.max(0, end - (video.currentTime || 0)));
+        }
+      } catch (_) {}
+      let peers = "—", down = "—", prog = "—";
+      if (player.torrent) {
+        peers = String(player.torrent.numPeers || 0);
+        down = formatSpeed(player.torrent.downloadSpeed || 0);
+        prog = `${Math.round((player.torrent.progress || 0) * 100)}%`;
+      }
+      const modeLabel = player.mode === "hls" ? t("playerHls") : player.mode === "torrent" ? t("playerTorrent") : t("playerHttp");
+      el.innerHTML = `
+        <span>${escapeHtml(t("playerMode"))}: <b>${escapeHtml(modeLabel)}</b></span>
+        <span>${escapeHtml(t("playerRes"))}: <b>${escapeHtml(res)}</b></span>
+        <span>${escapeHtml(t("playerBuffer"))}: <b>${escapeHtml(buffer)}</b></span>
+        ${player.mode === "torrent" ? `<span>${escapeHtml(t("playerPeers"))}: <b>${escapeHtml(peers)}</b></span>
+        <span>${escapeHtml(t("playerDown"))}: <b>${escapeHtml(down)}</b></span>
+        <span>${escapeHtml(t("playerProgress"))}: <b>${escapeHtml(prog)}</b></span>` : ""}
+        ${s?.media?.hdr ? `<span><b>${escapeHtml(t("playerHdrNote"))}</b></span>` : ""}`;
+    }
+    function bindPlayerChrome() {
+      const video = $("slVideo");
+      const seek = $("slSeek");
+      const time = $("slTime");
+      const playBtn = $("slPlayBtn");
+      const vol = $("slVol");
+      if (!video) return;
+
+      const syncPlay = () => { if (playBtn) playBtn.textContent = video.paused ? t("playerPlay") : t("playerPause"); };
+      video.addEventListener("play", () => { syncPlay(); setPlayerOverlay(""); });
+      video.addEventListener("pause", syncPlay);
+      video.addEventListener("waiting", () => playerOverlayMsg(t("playerBuffering"), t("playerCodecHint"), true));
+      video.addEventListener("playing", () => setPlayerOverlay(""));
+      video.addEventListener("loadedmetadata", () => { updatePlayerStats(); if (seek) seek.max = video.duration || 0; });
+      video.addEventListener("error", () => {
+        const err = video.error;
+        playerOverlayMsg(t("playerError"), err?.message || `Media error ${err?.code || ""}`.trim() || t("playerNoPlayable"), false);
+      });
+      video.addEventListener("timeupdate", () => {
+        if (!seek || seek.dataset.scrub === "1") return;
+        seek.value = String(video.currentTime || 0);
+        if (time) time.textContent = `${formatClock(video.currentTime)} / ${formatClock(video.duration)}`;
+      });
+      seek?.addEventListener("pointerdown", () => { seek.dataset.scrub = "1"; });
+      seek?.addEventListener("pointerup", () => {
+        seek.dataset.scrub = "0";
+        video.currentTime = Number(seek.value) || 0;
+      });
+      seek?.addEventListener("input", () => {
+        if (time) time.textContent = `${formatClock(Number(seek.value) || 0)} / ${formatClock(video.duration)}`;
+      });
+      playBtn?.addEventListener("click", () => { if (video.paused) video.play().catch(() => {}); else video.pause(); });
+      $("slMute")?.addEventListener("click", () => {
+        video.muted = !video.muted;
+        $("slMute").textContent = video.muted ? t("playerUnmute") : t("playerMute");
+      });
+      vol?.addEventListener("input", () => { video.volume = Number(vol.value); video.muted = video.volume === 0; });
+      $("slFs")?.addEventListener("click", async () => {
+        try {
+          if (!document.fullscreenElement) await els.playerRoot.requestFullscreen();
+          else await document.exitFullscreen();
+        } catch (_) {}
+      });
+      $("slPip")?.addEventListener("click", async () => {
+        try {
+          if (document.pictureInPictureElement) await document.exitPictureInPicture();
+          else if (document.pictureInPictureEnabled) await video.requestPictureInPicture();
+        } catch (err) { toast(err.message || String(err)); }
+      });
+      $("slSpeed")?.addEventListener("change", () => { video.playbackRate = Number($("slSpeed").value) || 1; });
+      $("slClosePlayer")?.addEventListener("click", closePlayer);
+      $("slToggleQuality")?.addEventListener("click", () => $("slQualityPanel")?.classList.toggle("hidden"));
+      $("slToggleFiles")?.addEventListener("click", () => $("slFilesPanel")?.classList.toggle("hidden"));
+      $("slExternal")?.addEventListener("click", () => {
+        const href = player.stream?.url || player.stream?.magnet;
+        if (href) window.open(href, "_blank", "noopener,noreferrer");
+      });
+      els.playerRoot.addEventListener("mousemove", () => {
+        els.playerRoot.classList.add("show-ui");
+        clearTimeout(player.uiHideTimer);
+        player.uiHideTimer = setTimeout(() => els.playerRoot.classList.remove("show-ui"), 2800);
+      });
+      player.statsTimer = setInterval(updatePlayerStats, 800);
+      syncPlay();
+    }
+    function renderPlayerShell(detail, stream) {
+      const flags = streamBadgesHtml(stream);
+      els.playerRoot.innerHTML = `
+        <div class="player-top">
+          <div>
+            <h2>${escapeHtml(detail?.name || stream.title)}</h2>
+            <div class="subline">${escapeHtml(stream.quality)} · ${escapeHtml(stream.source)}${stream.size ? ` · ${escapeHtml(stream.size)}` : ""}</div>
+            ${flags}
+          </div>
+          <div class="actions-scroll">
+            <button type="button" class="btn ghost sm" id="slExternal">${escapeHtml(t("playerExternal"))}</button>
+            <button type="button" class="btn ghost sm" id="slClosePlayer">${escapeHtml(t("playerClose"))}</button>
+          </div>
+        </div>
+        <div class="player-stage">
+          <video id="slVideo" playsinline controlsList="nodownload"></video>
+          <div id="slOverlay" class="player-overlay"></div>
+          <div id="slQualityPanel" class="player-panel hidden"><h4>${escapeHtml(t("playerQuality"))}</h4><div id="slQualityList"></div></div>
+          <div id="slFilesPanel" class="player-panel hidden"><h4>${escapeHtml(t("playerFiles"))}</h4><div id="slFilesList"></div></div>
+        </div>
+        <div class="player-bottom">
+          <input id="slSeek" class="player-seek" type="range" min="0" max="0" step="0.1" value="0" />
+          <div class="player-controls">
+            <button type="button" class="btn cyan sm" id="slPlayBtn">${escapeHtml(t("playerPlay"))}</button>
+            <button type="button" class="btn ghost sm" id="slMute">${escapeHtml(t("playerMute"))}</button>
+            <input id="slVol" class="player-vol" type="range" min="0" max="1" step="0.01" value="1" />
+            <span class="player-time" id="slTime">0:00 / 0:00</span>
+            <label class="hide-xs" style="display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:#b7c2d0">
+              ${escapeHtml(t("playerSpeed"))}
+              <select id="slSpeed" style="width:auto;min-height:32px;padding:.25rem .4rem">
+                <option value="0.5">0.5×</option><option value="0.75">0.75×</option>
+                <option value="1" selected>1×</option><option value="1.25">1.25×</option>
+                <option value="1.5">1.5×</option><option value="2">2×</option>
+              </select>
+            </label>
+            <button type="button" class="btn ghost sm" id="slToggleQuality">${escapeHtml(t("playerSwitch"))}</button>
+            <button type="button" class="btn ghost sm hide-xs" id="slToggleFiles">${escapeHtml(t("playerFiles"))}</button>
+            <button type="button" class="btn ghost sm hide-xs" id="slPip">${escapeHtml(t("playerPip"))}</button>
+            <button type="button" class="btn ghost sm" id="slFs">${escapeHtml(t("playerFullscreen"))}</button>
+          </div>
+          <div class="player-stats" id="slStats"></div>
+          <p class="disclaimer" style="color:#8b9bb0">${escapeHtml(t("playerCodecHint"))}</p>
+        </div>`;
+      const qList = $("slQualityList");
+      if (qList) {
+        const sorted = player.streams.slice().sort((a, b) => qualityRank(b.quality) - qualityRank(a.quality));
+        qList.innerHTML = sorted.map((s, idx) => {
+          const active = s === stream || (s.infoHash && s.infoHash === stream.infoHash && s.url === stream.url && s.title === stream.title);
+          return `<button type="button" class="btn ghost sm ${active ? "active" : ""}" data-q="${idx}">${escapeHtml(s.quality)} · ${escapeHtml(s.title).slice(0, 48)}</button>`;
+        }).join("");
+        qList.querySelectorAll("[data-q]").forEach((btn) => btn.addEventListener("click", () => {
+          const next = sorted[Number(btn.dataset.q)];
+          if (next) openPlayer(next, player.detail, player.streams);
+        }));
+      }
+      bindPlayerChrome();
+    }
+    function pickTorrentFile(torrent, preferredIdx) {
+      const files = torrent.files || [];
+      if (!files.length) return null;
+      if (preferredIdx != null && files[preferredIdx]) return files[preferredIdx];
+      const scored = files.map((f, i) => {
+        const name = f.name || "";
+        let score = f.length || 0;
+        if (/\.(mp4|m4v|webm|mkv|mov|m2ts|ts)$/i.test(name)) score += 1e12;
+        if (/\.(mp4|m4v|webm)$/i.test(name)) score += 5e11;
+        if (/sample|trailer|extra/i.test(name)) score -= 1e12;
+        return { f, i, score };
+      }).sort((a, b) => b.score - a.score);
+      return scored[0]?.f || files[0];
+    }
+    function fillTorrentFiles(torrent, currentFile) {
+      const box = $("slFilesList");
+      if (!box) return;
+      const files = (torrent.files || []).slice().sort((a, b) => (b.length || 0) - (a.length || 0));
+      box.innerHTML = files.map((f, idx) => `<button type="button" class="btn ghost sm ${f === currentFile ? "active" : ""}" data-fi="${idx}">${escapeHtml(f.name)} · ${formatBytes(f.length || 0)}</button>`).join("");
+      box.querySelectorAll("[data-fi]").forEach((btn) => btn.addEventListener("click", () => {
+        const file = files[Number(btn.dataset.fi)];
+        if (!file) return;
+        const video = $("slVideo");
+        playerOverlayMsg(t("playerBuffering"), file.name, true);
+        try {
+          if (typeof file.renderTo === "function") {
+            file.renderTo(video, { autoplay: true }, (err) => {
+              if (err) playerOverlayMsg(t("playerError"), err.message || String(err), false);
+              else { setPlayerOverlay(""); video.play().catch(() => {}); }
+            });
+          } else if (typeof file.getBlobURL === "function") {
+            file.getBlobURL((err, url) => {
+              if (err) return playerOverlayMsg(t("playerError"), err.message || String(err), false);
+              if (player.objectUrl) URL.revokeObjectURL(player.objectUrl);
+              player.objectUrl = url;
+              video.src = url;
+              video.play().catch(() => {});
+              setPlayerOverlay("");
+            });
+          }
+          fillTorrentFiles(torrent, file);
+        } catch (err) {
+          playerOverlayMsg(t("playerError"), err.message || String(err), false);
+        }
+      }));
+    }
+    async function startHttpPlayback(url) {
+      const video = $("slVideo");
+      const isHls = /\.m3u8(\?|$)/i.test(url) || player.stream?.media?.isHls;
+      if (isHls) {
+        await ensurePlayerLibs(true, false);
+        if (window.Hls && Hls.isSupported()) {
+          player.mode = "hls";
+          player.hls = new Hls({
+            enableWorker: true,
+            lowLatencyMode: false,
+            maxBufferLength: 60,
+            maxMaxBufferLength: 120,
+            capLevelToPlayerSize: false,
+          });
+          player.hls.loadSource(url);
+          player.hls.attachMedia(video);
+          player.hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            setPlayerOverlay("");
+            video.play().catch(() => {});
+          });
+          player.hls.on(Hls.Events.ERROR, (_, data) => {
+            if (data?.fatal) playerOverlayMsg(t("playerError"), data.type || t("playerNoPlayable"), false);
+          });
+          return;
+        }
+        if (video.canPlayType("application/vnd.apple.mpegurl")) {
+          player.mode = "hls";
+          video.src = url;
+          await video.play().catch(() => {});
+          setPlayerOverlay("");
+          return;
+        }
+      }
+      player.mode = "http";
+      video.src = url;
+      try {
+        await video.play();
+        setPlayerOverlay("");
+      } catch (err) {
+        playerOverlayMsg(t("playerError"), err.message || String(err), false);
+      }
+    }
+    async function startTorrentPlayback(magnetOrHash) {
+      await ensurePlayerLibs(false, true);
+      if (!window.WebTorrent) throw new Error("WebTorrent unavailable");
+      player.mode = "torrent";
+      playerOverlayMsg(t("playerFindingPeers"), t("playerCodecHint"), true);
+      player.client = new WebTorrent({
+        tracker: {
+          announce: [
+            "wss://tracker.openwebtorrent.com",
+            "wss://tracker.btorrent.xyz",
+            "wss://tracker.webtorrent.dev",
+          ],
+        },
+      });
+      const torrentId = magnetOrHash;
+      await new Promise((resolve, reject) => {
+        const torrent = player.client.add(torrentId, { announce: [
+          "wss://tracker.openwebtorrent.com",
+          "wss://tracker.btorrent.xyz",
+          "wss://tracker.webtorrent.dev",
+          "udp://tracker.opentrackr.org:1337/announce",
+          "udp://open.stealth.si:80/announce",
+        ]}, (tor) => {
+          player.torrent = tor;
+          const file = pickTorrentFile(tor, player.stream?.fileIdx);
+          if (!file) return reject(new Error(t("playerNoPlayable")));
+          fillTorrentFiles(tor, file);
+          const video = $("slVideo");
+          const done = (err) => {
+            if (err) reject(err);
+            else {
+              setPlayerOverlay("");
+              video.play().catch(() => {});
+              resolve();
+            }
+          };
+          try {
+            if (typeof file.renderTo === "function") file.renderTo(video, { autoplay: true }, done);
+            else if (typeof file.getBlobURL === "function") {
+              file.getBlobURL((err, url) => {
+                if (err) return done(err);
+                player.objectUrl = url;
+                video.src = url;
+                done(null);
+              });
+            } else done(new Error(t("playerNoPlayable")));
+          } catch (err) { done(err); }
+        });
+        torrent.on("error", reject);
+        player.client.on("error", reject);
+        setTimeout(() => {
+          if (!player.torrent || (player.torrent.numPeers === 0 && player.torrent.progress === 0)) {
+            updatePlayerStats();
+          }
+        }, 8000);
+      });
+    }
+    async function openPlayer(stream, detail, streams) {
+      if (!stream) return;
+      player.open = true;
+      player.detail = detail;
+      player.streams = Array.isArray(streams) && streams.length ? streams : [stream];
+      player.stream = stream;
+      show(els.playerRoot);
+      document.body.style.overflow = "hidden";
+      destroyPlayerEngine();
+      renderPlayerShell(detail, stream);
+      playerOverlayMsg(t("playerLoadingLibs"), t("playerCodecHint"), true);
+      try {
+        if (stream.url) {
+          await startHttpPlayback(stream.url);
+        } else if (stream.magnet || stream.infoHash) {
+          const id = stream.magnet || `magnet:?xt=urn:btih:${stream.infoHash}`;
+          await startTorrentPlayback(id);
+        } else {
+          playerOverlayMsg(t("playerError"), t("playerNoPlayable"), false);
+        }
+        updatePlayerStats();
+      } catch (err) {
+        playerOverlayMsg(t("playerError"), err?.message || String(err), false);
+      }
+    }
+
     async function fetchTorrentioStreams(type, id) {
       const res = await fetch(`${TORRENTIO}/stream/${encodeURIComponent(type)}/${encodeURIComponent(id)}.json`, { redirect: "follow" });
       if (!res.ok) throw new Error(`Torrentio HTTP ${res.status}`);
@@ -941,6 +1720,7 @@
         if (state.quality) list = list.filter((s) => s.quality === state.quality);
         if (state.source) list = list.filter((s) => s.source === state.source);
         if (state.minSeeders > 0) list = list.filter((s) => (s.seeders || 0) >= state.minSeeders);
+        list = list.slice().sort((a, b) => qualityRank(b.quality) - qualityRank(a.quality) || (b.seeders || 0) - (a.seeders || 0));
         const qualities = [...new Set(state.streams.map((s) => s.quality))];
         const sources = [...new Set(state.streams.map((s) => s.source).filter(Boolean))].sort((a, b) => a.localeCompare(b));
         $("torFilters").innerHTML = `
@@ -973,16 +1753,19 @@
                 ${s.seeders != null ? `<span>👤 ${s.seeders}</span>` : ""}
                 <span>⚙️ ${escapeHtml(s.source)}</span>
               </div>
+              ${streamBadgesHtml(s)}
             </div>
             <div class="stream-actions">
+              <button type="button" class="btn cyan sm tor-play">${escapeHtml(t("play"))}</button>
               ${s.magnet ? `<button type="button" class="btn ghost sm tor-copy" data-kind="magnet">${escapeHtml(t("copyMagnet"))}</button>
-                <a class="btn cyan sm" href="${escapeAttr(s.magnet)}">${escapeHtml(t("openMagnet"))}</a>` : ""}
+                <a class="btn ghost sm" href="${escapeAttr(s.magnet)}">${escapeHtml(t("openMagnet"))}</a>` : ""}
               ${s.url ? `<button type="button" class="btn ghost sm tor-copy" data-kind="url">${escapeHtml(t("copyLink"))}</button>
                 <a class="btn ghost sm" href="${escapeAttr(s.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(t("openLink"))}</a>` : ""}
             </div>
           </div>`).join("");
         $("torList").querySelectorAll(".stream-row").forEach((row) => {
           const s = list[Number(row.dataset.idx)];
+          row.querySelector(".tor-play")?.addEventListener("click", () => openPlayer(s, detail, state.streams));
           row.querySelectorAll(".tor-copy").forEach((btn) => btn.addEventListener("click", async () => {
             const text = btn.dataset.kind === "url" ? s.url : s.magnet;
             try { await navigator.clipboard.writeText(text); toast(t("copied")); } catch (_) { toast(text); }
@@ -1036,7 +1819,7 @@
       if (append) extras.skip = String(session.skip || 0);
       else session.skip = 0;
       syncDiscoverControls();
-      if (!append) els.content.innerHTML=`<p class="muted">${escapeHtml(t("loadingCatalog"))}</p>`;
+      if (!append) els.content.innerHTML=skeletonHtml(12);
       try{
         const batch = await fetchCatalog(type,catalog,extras);
         session.catalog = append ? [...session.catalog, ...batch] : batch;
@@ -1048,7 +1831,7 @@
     }
     async function runSearch(){
       const q=els.searchCatalog.value.trim(); if(!q){ toast(t("enterSearch")); return; }
-      setError(els.appError,""); els.content.innerHTML=`<p class="muted">${escapeHtml(t("searching"))}</p>`;
+      setError(els.appError,""); els.content.innerHTML=skeletonHtml(8);
       try{
         const type=els.searchType.value;
         session.catalog=type==="both"?[...(await fetchCatalog("movie","top",{search:q})),...(await fetchCatalog("series","top",{search:q}))]:await fetchCatalog(type,"top",{search:q});
@@ -1063,9 +1846,10 @@
       a.download=`stremiolens-${new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")}.csv`; a.click();
     }
     function clearFilters(){ ["searchLib","minRanking","yearFrom","yearTo","searchCatalog"].forEach(id=>{$(id).value="";});
-      els.typeFilter.value="all"; els.watchedFilter.value="all"; els.genreFilter.value=""; els.sortBy.value="ranking"; els.sortDir.value="desc"; render(); }
+      els.typeFilter.value="all"; els.watchedFilter.value="all"; els.genreFilter.value=""; els.sortBy.value="ranking"; els.sortDir.value="desc";
+      session.onlyFavorites=false; session.onlyMissing=false; if (els.discYear && els.discCatalog.value !== "year") els.discYear.value=""; render(); }
     function signOut(){ session.authKey=null; session.email=null; session.library=[]; session.catalog=[]; els.password.value=""; els.email.value="";
-      assertNoCredentialStorage(); closeModal(); hide(els.appView); show(els.loginView); hide(els.loginProgress); setError(els.loginError,""); setError(els.appError,""); }
+      assertNoCredentialStorage(); closePlayer(); closeModal(); closeStreamsModal(); hide(els.shortcutsModal); hide(els.appView); show(els.loginView); hide(els.loginProgress); setError(els.loginError,""); setError(els.appError,""); }
 
     async function onLogin(e){
       e.preventDefault(); assertNoCredentialStorage(); setError(els.loginError,"");
@@ -1110,9 +1894,16 @@
     $("loadMore").onclick=()=>loadDiscover(true).catch((err)=>window.__stremioLensShowError?.(err?.message||String(err),"loadMore"));
     $("randomPick").onclick=()=>{ try { const items=visibleItems(); if(!items.length){ toast(t("nothingToPick")); return; } openDetails(items[Math.floor(Math.random()*items.length)]); } catch(err){ window.__stremioLensShowError?.(err?.message||String(err),"random"); } };
     $("onlyNotInLib").onclick=()=>{ session.onlyMissing=!session.onlyMissing; render(); };
+    $("onlyFavorites").onclick=()=>{ session.onlyFavorites=!session.onlyFavorites; render(); };
+    $("densityToggle").onclick=()=>{ session.compact=!session.compact; try{ localStorage.setItem("stremiolens_compact", session.compact?"1":"0"); }catch(_){ } render(); };
+    $("showShortcuts").onclick=()=>show(els.shortcutsModal);
+    els.shortcutsModal?.addEventListener("click", (e) => { if (e.target === els.shortcutsModal) hide(els.shortcutsModal); });
+    els.fabTop?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+    window.addEventListener("scroll", () => { els.fabTop?.classList.toggle("show", window.scrollY > 480); }, { passive: true });
     els.searchCatalog.addEventListener("keydown",e=>{ if(e.key==="Enter") runSearch().catch((err)=>window.__stremioLensShowError?.(err?.message||String(err),"search")); });
     els.discCatalog.addEventListener("change",()=>{ syncDiscoverControls(); });
     els.discYear.addEventListener("change",()=>{
+      session.decade = null;
       if (els.discCatalog.value === "year") loadDiscover(false).catch((err)=>window.__stremioLensShowError?.(err?.message||String(err),"discover"));
       else render();
     });
@@ -1124,7 +1915,35 @@
     [els.searchLib,els.typeFilter,els.watchedFilter,els.genreFilter,els.minRanking,els.yearFrom,els.yearTo,els.sortBy,els.sortDir]
       .forEach(el=>el.addEventListener("input",render));
     window.addEventListener("beforeunload",()=>{ session.authKey=null; session.email=null; session.library=[]; session.catalog=[]; els.password.value=""; els.email.value=""; });
-    document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeStreamsModal(); closeModal(); } });
+    document.addEventListener("keydown", (e) => {
+      const tag = (e.target && e.target.tagName) || "";
+      const typing = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || e.target?.isContentEditable;
+      if (e.key === "Escape") {
+        if (player.open) { closePlayer(); return; }
+        closeStreamsModal(); closeModal(); hide(els.shortcutsModal); return;
+      }
+      if (player.open) {
+        const video = $("slVideo");
+        if (!video) return;
+        if (e.key === " " || e.key === "k") { e.preventDefault(); if (video.paused) video.play().catch(() => {}); else video.pause(); return; }
+        if (e.key === "ArrowRight") { e.preventDefault(); video.currentTime = Math.min(video.duration || 1e9, video.currentTime + 10); return; }
+        if (e.key === "ArrowLeft") { e.preventDefault(); video.currentTime = Math.max(0, video.currentTime - 10); return; }
+        if (e.key === "ArrowUp") { e.preventDefault(); video.volume = Math.min(1, video.volume + 0.05); if ($("slVol")) $("slVol").value = String(video.volume); return; }
+        if (e.key === "ArrowDown") { e.preventDefault(); video.volume = Math.max(0, video.volume - 0.05); if ($("slVol")) $("slVol").value = String(video.volume); return; }
+        if (e.key === "m") { e.preventDefault(); video.muted = !video.muted; return; }
+        if (e.key === "f") { e.preventDefault(); $("slFs")?.click(); return; }
+        return;
+      }
+      if (typing) return;
+      if (e.key === "?" || (e.shiftKey && e.key === "/")) { e.preventDefault(); els.shortcutsModal.classList.toggle("hidden"); return; }
+      if (els.appView.classList.contains("hidden")) return;
+      if (e.key === "/") { e.preventDefault(); setMode("search"); els.searchCatalog.focus(); return; }
+      if (e.key === "r" || e.key === "R") { e.preventDefault(); $("randomPick").click(); return; }
+      if (e.key === "f" || e.key === "F") { e.preventDefault(); $("onlyFavorites").click(); return; }
+      if (e.key === "1") { e.preventDefault(); setMode("library"); return; }
+      if (e.key === "2") { e.preventDefault(); setMode("discover"); return; }
+      if (e.key === "3") { e.preventDefault(); setMode("search"); return; }
+    });
     document.documentElement.dataset.build = BUILD_ID;
     } catch (bootErr) {
       const msg = (bootErr && bootErr.stack) || (bootErr && bootErr.message) || String(bootErr);
