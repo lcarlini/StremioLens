@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>StremioLens — Stremio library explorer</title>
+  <meta name="description" content="Explore your Stremio account library with rankings, filters, and stats. Unofficial tool. Credentials never stored." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --void: #07090d;
+      --stage: #0d1219;
+      --panel: rgba(16, 22, 32, 0.82);
+      --ink: #eef3f8;
+      --muted: #8b9bb0;
+      --line: rgba(238, 243, 248, 0.1);
+      --signal: #ff5a36;
+      --signal-2: #ff8a3d;
+      --cyan: #3ec6ff;
+      --ok: #5ddea5;
+      --danger: #ff6b7a;
+      --font-display: "Bebas Neue", Impact, sans-serif;
+      --font-body: "Manrope", system-ui, sans-serif;
+      --shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: var(--font-body);
+      background: var(--void);
+      overflow-x: hidden;
+    }
+
+    .sky {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background:
+        radial-gradient(ellipse 80% 55% at 50% -10%, rgba(255, 90, 54, 0.28), transparent 55%),
+        radial-gradient(ellipse 50% 40% at 90% 20%, rgba(62, 198, 255, 0.12), transparent 50%),
+        radial-gradient(ellipse 40% 35% at 5% 70%, rgba(255, 138, 61, 0.1), transparent 45%),
+        linear-gradient(180deg, #0a0e15 0%, var(--void) 45%, #05070a 100%);
+    }
+    .sky::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+      opacity: 0.07;
+      pointer-events: none;
+      mix-blend-mode: overlay;
+      animation: grain 0.8s steps(2) infinite;
+    }
+    .orb {
+      position: fixed;
+      width: 42vw;
+      height: 42vw;
+      max-width: 520px;
+      max-height: 520px;
+      border-radius: 50%;
+      filter: blur(40px);
+      opacity: 0.35;
+      z-index: -1;
+      animation: drift 14s ease-in-out infinite alternate;
+    }
+    .orb.a { top: 8%; left: -8%; background: #ff5a36; }
+    .orb.b { right: -10%; bottom: 10%; background: #3ec6ff; animation-delay: -4s; }
+
+    .shell {
+      width: min(1200px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 1.75rem 0 3.5rem;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+      animation: rise 0.55s ease both;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      text-decoration: none;
+      color: inherit;
+    }
+    .mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background:
+        conic-gradient(from 210deg, var(--signal), var(--signal-2), var(--cyan), var(--signal));
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.12), 0 12px 30px rgba(255, 90, 54, 0.35);
+      animation: spinGlow 10s linear infinite;
+    }
+    .mark span {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--void);
+      display: grid;
+      place-items: center;
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+    }
+    .logo strong {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 1.85rem;
+      letter-spacing: 0.06em;
+      line-height: 1;
+    }
+    .logo em {
+      font-style: normal;
+      color: var(--muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .pill-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .pill i {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--ok);
+      box-shadow: 0 0 10px var(--ok);
+    }
+    .pill.warn i { background: var(--signal); box-shadow: 0 0 10px var(--signal); }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 1.25rem;
+      align-items: stretch;
+      margin-bottom: 1.25rem;
+      animation: rise 0.7s ease both;
+    }
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+    }
+
+    .hero-copy, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+    .hero-copy {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(1.5rem, 3vw, 2.4rem);
+      min-height: 340px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .hero-copy::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(120deg, rgba(7,9,13,0.15), rgba(7,9,13,0.75)),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='500' viewBox='0 0 800 500'%3E%3Crect fill='%23101824' width='800' height='500'/%3E%3Cg fill='none' stroke='%23ff5a36' stroke-opacity='0.35' stroke-width='2'%3E%3Cpath d='M0 380 C160 300 240 420 400 340 S640 260 800 320'/%3E%3Cpath d='M0 420 C180 340 280 460 460 380 S700 300 800 360' stroke='%233ec6ff'/%3E%3C/g%3E%3Ccircle cx='640' cy='120' r='70' fill='%23ff5a36' fill-opacity='0.15'/%3E%3Ccircle cx='120' cy='100' r='40' fill='%233ec6ff' fill-opacity='0.12'/%3E%3C/svg%3E");
+      background-size: cover;
+      background-position: center;
+      opacity: 0.95;
+      z-index: 0;
+    }
+    .hero-copy > * { position: relative; z-index: 1; }
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.85rem;
+      color: var(--cyan);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .kicker::before {
+      content: "";
+      width: 28px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--signal), var(--cyan));
+    }
+    .hero-copy h1 {
+      margin: 0 0 0.75rem;
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 8vw, 5.2rem);
+      line-height: 0.92;
+      letter-spacing: 0.04em;
+      max-width: 12ch;
+    }
+    .hero-copy h1 span {
+      background: linear-gradient(90deg, var(--signal), var(--signal-2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .hero-copy p {
+      margin: 0;
+      max-width: 34rem;
+      color: #c5d0de;
+      font-size: 1.02rem;
+      line-height: 1.55;
+    }
+    .refs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem 1.1rem;
+      margin-top: 1.25rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .refs a {
+      color: var(--cyan);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(62, 198, 255, 0.35);
+    }
+    .refs a:hover { color: #9adfef; }
+
+    .panel { padding: 1.35rem; animation: rise 0.75s ease both; }
+    .panel h2 {
+      margin: 0 0 0.35rem;
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      letter-spacing: 0.06em;
+    }
+    .panel .sub {
+      margin: 0 0 1.1rem;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+    .notice {
+      margin: 0 0 1.1rem;
+      padding: 0.85rem 0.95rem;
+      border-radius: 12px;
+      border: 1px solid rgba(62, 198, 255, 0.25);
+      background: linear-gradient(135deg, rgba(62, 198, 255, 0.08), rgba(255, 90, 54, 0.05));
+      color: #d5e6f3;
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+    .notice strong { color: var(--cyan); }
+
+    .login-grid { display: grid; gap: 0.9rem; }
+    label {
+      display: grid;
+      gap: 0.35rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    input, select, button { font: inherit; }
+    input, select {
+      width: 100%;
+      padding: 0.78rem 0.9rem;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(7, 9, 13, 0.75);
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    input:focus, select:focus {
+      border-color: rgba(255, 90, 54, 0.7);
+      box-shadow: 0 0 0 3px rgba(255, 90, 54, 0.18);
+    }
+
+    .btn {
+      appearance: none;
+      border: 0;
+      border-radius: 12px;
+      padding: 0.85rem 1.15rem;
+      cursor: pointer;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      background: linear-gradient(135deg, var(--signal), var(--signal-2));
+      color: #140804;
+      box-shadow: 0 12px 28px rgba(255, 90, 54, 0.28);
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+    .btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+    .btn.ghost {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+    .btn.cyan {
+      background: linear-gradient(135deg, #4fd0ff, #2aa0d8);
+      color: #041018;
+      box-shadow: 0 12px 28px rgba(62, 198, 255, 0.22);
+    }
+
+    .toolbar { display: grid; gap: 0.75rem; margin-bottom: 1rem; }
+    .toolbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: end;
+    }
+    .field {
+      display: grid;
+      gap: 0.3rem;
+      min-width: 120px;
+      flex: 1 1 140px;
+    }
+    .field.grow { flex: 2 1 220px; }
+    .field label { font-size: 0.75rem; }
+
+    .meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.25rem;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0.15rem 0 0.85rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      max-height: min(62vh, 720px);
+      background: rgba(0,0,0,0.22);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #151c28;
+      text-align: left;
+      padding: 0.72rem 0.75rem;
+      font-weight: 700;
+      color: var(--signal-2);
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      letter-spacing: 0.02em;
+    }
+    thead th:hover { color: #ffd0b5; }
+    tbody td {
+      padding: 0.62rem 0.75rem;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    tbody tr { transition: background 0.15s ease; }
+    tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.015); }
+    tbody tr:hover { background: rgba(255, 90, 54, 0.08); }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .center { text-align: center; }
+    .muted { color: var(--muted); }
+    .rank-hi { color: #ffc39a; font-weight: 700; }
+    .ok { color: var(--ok); }
+    .type-chip {
+      display: inline-block;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--cyan);
+    }
+    .linkish {
+      color: var(--cyan);
+      text-decoration: none;
+      border-bottom: 1px dotted rgba(62, 198, 255, 0.45);
+    }
+    .linkish:hover { color: #9adfef; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.9rem;
+      background: rgba(0, 0, 0, 0.22);
+    }
+    .stat h3 {
+      margin: 0 0 0.35rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .stat strong {
+      font-family: var(--font-display);
+      font-size: 1.7rem;
+      letter-spacing: 0.04em;
+    }
+    .stat ul {
+      margin: 0.4rem 0 0;
+      padding: 0;
+      list-style: none;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .stat li {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.15rem 0;
+    }
+
+    .error {
+      margin-top: 0.85rem;
+      padding: 0.8rem 0.9rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 107, 122, 0.4);
+      background: rgba(255, 107, 122, 0.1);
+      color: #ffc2c9;
+      font-size: 0.9rem;
+    }
+    .progress {
+      margin-top: 0.9rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .progress .bar {
+      margin-top: 0.45rem;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+    .progress .bar > i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--signal), var(--cyan));
+      transition: width 0.2s ease;
+    }
+
+    .footer {
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.5;
+      animation: rise 0.85s ease both;
+    }
+    .footer a { color: var(--cyan); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    .hidden { display: none !important; }
+    #appView { animation: rise 0.5s ease both; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes drift {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to { transform: translate3d(4%, 6%, 0) scale(1.08); }
+    }
+    @keyframes grain {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(-1%, 1%); }
+    }
+    @keyframes spinGlow {
+      to { filter: hue-rotate(25deg); }
+    }
+
+    @media (max-width: 700px) {
+      .shell { width: min(100% - 1.1rem, 1200px); }
+      thead th:nth-child(7), tbody td:nth-child(7) { display: none; }
+      .hero-copy { min-height: 280px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sky" aria-hidden="true"></div>
+  <div class="orb a" aria-hidden="true"></div>
+  <div class="orb b" aria-hidden="true"></div>
+
+  <div class="shell">
+    <header class="topbar">
+      <a class="logo" href="./">
+        <div class="mark" aria-hidden="true"><span>SL</span></div>
+        <div>
+          <strong>STREMIOLENS</strong>
+          <em>for your Stremio account</em>
+        </div>
+      </a>
+      <div class="pill-row">
+        <span class="pill"><i></i> Credentials never stored</span>
+        <span class="pill warn"><i></i> Unofficial · uses Stremio API</span>
+      </div>
+    </header>
+
+    <section id="loginView">
+      <div class="hero">
+        <div class="hero-copy">
+          <div class="kicker">Stremio account required</div>
+          <h1>YOUR LIBRARY,<br /><span>IN FOCUS</span></h1>
+          <p>
+            Sign in with the <strong>same Stremio account</strong> you use in the
+            Stremio desktop, mobile, or web app. StremioLens reads your library from
+            Stremio’s servers, enriches titles via Cinemeta, and never saves your password.
+          </p>
+          <div class="refs">
+            <span>References:</span>
+            <a href="https://www.stremio.com/" target="_blank" rel="noopener noreferrer">stremio.com</a>
+            <a href="https://web.stremio.com/" target="_blank" rel="noopener noreferrer">web.stremio.com</a>
+            <a href="https://api.strem.io/" target="_blank" rel="noopener noreferrer">api.strem.io</a>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>SIGN IN</h2>
+          <p class="sub">Use your Stremio email &amp; password. Re-enter them every visit.</p>
+          <div class="notice">
+            This tool authenticates against the official <strong>Stremio</strong> API
+            (<code style="color:#9adfef">api.strem.io</code>).
+            It is <strong>not</strong> a Stremio product. Your account credentials are held in memory only for this browser session.
+          </div>
+          <form id="loginForm" class="login-grid" autocomplete="off">
+            <label>
+              Stremio account email
+              <input id="email" name="email" type="email" required autocomplete="off" spellcheck="false" placeholder="you@example.com" />
+            </label>
+            <label>
+              Stremio account password
+              <input id="password" name="password" type="password" required autocomplete="new-password" placeholder="••••••••" />
+            </label>
+            <button class="btn" id="loginBtn" type="submit">Connect Stremio library</button>
+          </form>
+          <div id="loginError" class="error hidden"></div>
+          <div id="loginProgress" class="progress hidden">
+            <div id="loginStatus">Signing in to Stremio…</div>
+            <div class="bar"><i id="loginBar"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="footer">
+        StremioLens is an unofficial, client-side explorer for libraries tied to a
+        <strong>Stremio account</strong>.
+        Not affiliated with or endorsed by Stremio.
+        Metadata via <a href="https://github.com/Stremio/stremio-addon-sdk" target="_blank" rel="noopener noreferrer">Cinemeta / Stremio addon ecosystem</a>.
+        Official apps: <a href="https://www.stremio.com/" target="_blank" rel="noopener noreferrer">Stremio</a>
+        · <a href="https://web.stremio.com/" target="_blank" rel="noopener noreferrer">Stremio Web</a>.
+      </footer>
+    </section>
+
+    <section id="appView" class="panel hidden">
+      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:0.75rem;margin-bottom:1rem;align-items:end;">
+        <div>
+          <h2 style="margin:0;">LIBRARY</h2>
+          <p class="sub" style="margin:0.25rem 0 0;" id="sessionLabel">Connected to your Stremio account</p>
+        </div>
+        <div class="pill"><i></i> Live session · nothing saved</div>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-row">
+          <div class="field grow">
+            <label for="search">Search title</label>
+            <input id="search" type="search" placeholder="Filter by name…" />
+          </div>
+          <div class="field">
+            <label for="typeFilter">Type</label>
+            <select id="typeFilter">
+              <option value="all">All</option>
+              <option value="movie">Movies</option>
+              <option value="series">Series</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="watchedFilter">Watched</label>
+            <select id="watchedFilter">
+              <option value="all">All</option>
+              <option value="watched">Watched</option>
+              <option value="unwatched">Unwatched</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="genreFilter">Genre</label>
+            <select id="genreFilter">
+              <option value="">All genres</option>
+            </select>
+          </div>
+        </div>
+        <div class="toolbar-row">
+          <div class="field">
+            <label for="minRanking">Min ranking</label>
+            <input id="minRanking" type="number" min="0" max="10" step="0.1" placeholder="7.5" />
+          </div>
+          <div class="field">
+            <label for="yearFrom">Year from</label>
+            <input id="yearFrom" type="number" min="1880" max="2100" placeholder="1990" />
+          </div>
+          <div class="field">
+            <label for="yearTo">Year to</label>
+            <input id="yearTo" type="number" min="1880" max="2100" placeholder="2024" />
+          </div>
+          <div class="field">
+            <label for="sortBy">Sort by</label>
+            <select id="sortBy">
+              <option value="ranking">Ranking</option>
+              <option value="name">Name</option>
+              <option value="year">Year</option>
+              <option value="type">Type</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="sortDir">Order</label>
+            <select id="sortDir">
+              <option value="desc">Descending</option>
+              <option value="asc">Ascending</option>
+            </select>
+          </div>
+        </div>
+        <div class="toolbar-row">
+          <button type="button" class="btn ghost" id="clearFilters">Clear filters</button>
+          <button type="button" class="btn cyan" id="exportCsv">Save CSV</button>
+          <button type="button" class="btn ghost" id="toggleStats">Stats</button>
+          <button type="button" class="btn ghost" id="signOut">Sign out</button>
+        </div>
+      </div>
+
+      <div class="meta-bar">
+        <div id="resultMeta">0 items</div>
+        <div id="sortMeta" class="muted"></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-sort="index">#</th>
+              <th data-sort="type">Type</th>
+              <th data-sort="name">Name</th>
+              <th data-sort="year">Year</th>
+              <th data-sort="ranking">Ranking</th>
+              <th data-sort="watched">Watched</th>
+              <th data-sort="genres">Genres</th>
+              <th>IMDb</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+
+      <div id="statsPanel" class="stats hidden"></div>
+      <div id="appError" class="error hidden"></div>
+
+      <footer class="footer">
+        Data source: your <strong>Stremio account</strong> library via
+        <a href="https://api.strem.io/" target="_blank" rel="noopener noreferrer">api.strem.io</a>
+        · metadata from Cinemeta.
+        Unofficial tool — see
+        <a href="https://www.stremio.com/" target="_blank" rel="noopener noreferrer">Stremio</a>
+        for the official product.
+      </footer>
+    </section>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const API = "https://api.strem.io/api";
+      const CINEMETA = "https://cinemeta-live.strem.io/meta";
+
+      /** In-memory only. Cleared on sign-out / reload. Never written to storage. */
+      const session = {
+        authKey: null,
+        email: null,
+        items: [],
+      };
+
+      const els = {
+        loginView: document.getElementById("loginView"),
+        appView: document.getElementById("appView"),
+        loginForm: document.getElementById("loginForm"),
+        email: document.getElementById("email"),
+        password: document.getElementById("password"),
+        loginBtn: document.getElementById("loginBtn"),
+        loginError: document.getElementById("loginError"),
+        loginProgress: document.getElementById("loginProgress"),
+        loginStatus: document.getElementById("loginStatus"),
+        loginBar: document.getElementById("loginBar"),
+        tableBody: document.getElementById("tableBody"),
+        resultMeta: document.getElementById("resultMeta"),
+        sortMeta: document.getElementById("sortMeta"),
+        search: document.getElementById("search"),
+        typeFilter: document.getElementById("typeFilter"),
+        watchedFilter: document.getElementById("watchedFilter"),
+        genreFilter: document.getElementById("genreFilter"),
+        minRanking: document.getElementById("minRanking"),
+        yearFrom: document.getElementById("yearFrom"),
+        yearTo: document.getElementById("yearTo"),
+        sortBy: document.getElementById("sortBy"),
+        sortDir: document.getElementById("sortDir"),
+        clearFilters: document.getElementById("clearFilters"),
+        exportCsv: document.getElementById("exportCsv"),
+        toggleStats: document.getElementById("toggleStats"),
+        statsPanel: document.getElementById("statsPanel"),
+        signOut: document.getElementById("signOut"),
+        appError: document.getElementById("appError"),
+        sessionLabel: document.getElementById("sessionLabel"),
+      };
+
+      function assertNoCredentialStorage() {
+        try {
+          ["stremiolens_email", "stremiolens_password", "stremiolens_credentials", "stremio_auth"].forEach((k) => {
+            localStorage.removeItem(k);
+            sessionStorage.removeItem(k);
+          });
+        } catch (_) { /* ignore */ }
+      }
+
+      function show(el) { el.classList.remove("hidden"); }
+      function hide(el) { el.classList.add("hidden"); }
+
+      function setError(target, message) {
+        if (!message) {
+          hide(target);
+          target.textContent = "";
+          return;
+        }
+        target.textContent = message;
+        show(target);
+      }
+
+      function setProgress(text, ratio) {
+        show(els.loginProgress);
+        els.loginStatus.textContent = text;
+        els.loginBar.style.width = `${Math.max(0, Math.min(100, ratio * 100))}%`;
+      }
+
+      async function apiPost(path, body) {
+        const res = await fetch(`${API}/${path}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status} on ${path}`);
+        const data = await res.json();
+        if (data.error) {
+          const msg = typeof data.error === "object"
+            ? (data.error.message || JSON.stringify(data.error))
+            : String(data.error);
+          throw new Error(msg);
+        }
+        return data.result;
+      }
+
+      async function login(email, password) {
+        const result = await apiPost("login", {
+          type: "Login",
+          email,
+          password,
+          facebook: false,
+        });
+        if (!result?.authKey) throw new Error("Stremio login succeeded but no authKey returned.");
+        return result.authKey;
+      }
+
+      async function fetchLibrary(authKey) {
+        const result = await apiPost("datastoreGet", {
+          authKey,
+          collection: "libraryItem",
+          ids: [],
+          all: true,
+        });
+        if (!Array.isArray(result)) throw new Error("Unexpected Stremio library response.");
+        return result;
+      }
+
+      function parseYear(value) {
+        if (!value) return null;
+        const digits = String(value).replace(/\D+/g, " ").trim().split(/\s+/);
+        if (!digits.length) return null;
+        const year = Number(digits[0]);
+        return year >= 1880 && year <= 2100 ? year : null;
+      }
+
+      function parseRanking(value) {
+        if (value === null || value === undefined || value === "") return null;
+        const n = Number(value);
+        return Number.isFinite(n) ? n : null;
+      }
+
+      function parseGenres(value) {
+        if (!value) return [];
+        if (Array.isArray(value)) return value.map(String).map((g) => g.trim()).filter(Boolean);
+        return String(value).split(",").map((g) => g.trim()).filter(Boolean);
+      }
+
+      function isWatched(item) {
+        const state = item.state || {};
+        const times = Number(state.timesWatched || 0);
+        const flagged = Number(state.flaggedWatched || 0);
+        return { watched: flagged > 0 || times > 0, timesWatched: times };
+      }
+
+      async function fetchMeta(itemId, itemType) {
+        try {
+          const res = await fetch(`${CINEMETA}/${itemType}/${encodeURIComponent(itemId)}.json`);
+          if (!res.ok) return null;
+          const data = await res.json();
+          const meta = data.meta || {};
+          return {
+            name: meta.name || null,
+            year: parseYear(meta.releaseInfo || meta.year),
+            ranking: parseRanking(meta.imdbRating),
+            genres: parseGenres(meta.genres),
+          };
+        } catch {
+          return null;
+        }
+      }
+
+      async function mapPool(items, limit, worker, onProgress) {
+        const results = new Array(items.length);
+        let next = 0;
+        let done = 0;
+        async function run() {
+          while (next < items.length) {
+            const i = next++;
+            results[i] = await worker(items[i], i);
+            done++;
+            onProgress?.(done, items.length);
+          }
+        }
+        await Promise.all(Array.from({ length: Math.min(limit, items.length || 1) }, () => run()));
+        return results;
+      }
+
+      async function enrichLibrary(rawItems, onProgress) {
+        const active = rawItems.filter((item) => !item.removed && !item.temp);
+        const needsMeta = active.filter((item) => {
+          const t = String(item.type || "other").toLowerCase();
+          return t === "movie" || t === "series";
+        });
+
+        const metaByKey = new Map();
+        if (needsMeta.length) {
+          await mapPool(
+            needsMeta,
+            12,
+            async (item) => {
+              const id = item._id || item.id;
+              const type = String(item.type || "movie").toLowerCase();
+              metaByKey.set(`${type}:${id}`, await fetchMeta(id, type));
+            },
+            onProgress
+          );
+        } else {
+          onProgress?.(1, 1);
+        }
+
+        return active.map((item) => {
+          const id = item._id || item.id || "";
+          const type = String(item.type || "other").toLowerCase();
+          const meta = metaByKey.get(`${type}:${id}`) || {};
+          const watch = isWatched(item);
+          return {
+            id,
+            type,
+            name: meta.name || item.name || "Unknown",
+            year: meta.year ?? null,
+            ranking: meta.ranking ?? null,
+            genres: meta.genres || [],
+            watched: watch.watched,
+            timesWatched: watch.timesWatched,
+          };
+        });
+      }
+
+      function clearSensitiveForm() {
+        els.password.value = "";
+        els.email.value = "";
+      }
+
+      function signOut() {
+        session.authKey = null;
+        session.email = null;
+        session.items = [];
+        clearSensitiveForm();
+        assertNoCredentialStorage();
+        hide(els.appView);
+        show(els.loginView);
+        hide(els.loginProgress);
+        setError(els.loginError, "");
+        setError(els.appError, "");
+        els.statsPanel.classList.add("hidden");
+        els.statsPanel.innerHTML = "";
+      }
+
+      function uniqueGenres(items) {
+        const set = new Set();
+        for (const item of items) for (const g of item.genres) set.add(g);
+        return [...set].sort((a, b) => a.localeCompare(b));
+      }
+
+      function fillGenreOptions(items) {
+        const current = els.genreFilter.value;
+        els.genreFilter.innerHTML = `<option value="">All genres</option>` +
+          uniqueGenres(items).map((g) => `<option value="${escapeAttr(g)}">${escapeHtml(g)}</option>`).join("");
+        if ([...els.genreFilter.options].some((o) => o.value === current)) {
+          els.genreFilter.value = current;
+        }
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;");
+      }
+
+      function escapeAttr(value) {
+        return escapeHtml(value).replaceAll("'", "&#39;");
+      }
+
+      function getFilters() {
+        const minRanking = els.minRanking.value === "" ? null : Number(els.minRanking.value);
+        const yearFrom = els.yearFrom.value === "" ? null : Number(els.yearFrom.value);
+        const yearTo = els.yearTo.value === "" ? null : Number(els.yearTo.value);
+        return {
+          search: els.search.value.trim().toLowerCase(),
+          type: els.typeFilter.value,
+          watched: els.watchedFilter.value,
+          genre: els.genreFilter.value,
+          minRanking: Number.isFinite(minRanking) ? minRanking : null,
+          yearFrom: Number.isFinite(yearFrom) ? yearFrom : null,
+          yearTo: Number.isFinite(yearTo) ? yearTo : null,
+          sortBy: els.sortBy.value,
+          sortDir: els.sortDir.value,
+        };
+      }
+
+      function visibleItems() {
+        const f = getFilters();
+        let items = session.items.slice();
+
+        if (f.type === "movie") items = items.filter((i) => i.type === "movie");
+        else if (f.type === "series") items = items.filter((i) => i.type === "series");
+        else if (f.type === "other") items = items.filter((i) => i.type !== "movie" && i.type !== "series");
+
+        if (f.search) items = items.filter((i) => i.name.toLowerCase().includes(f.search));
+        if (f.minRanking != null) items = items.filter((i) => i.ranking != null && i.ranking >= f.minRanking);
+        if (f.yearFrom != null) items = items.filter((i) => i.year != null && i.year >= f.yearFrom);
+        if (f.yearTo != null) items = items.filter((i) => i.year != null && i.year <= f.yearTo);
+        if (f.genre) items = items.filter((i) => i.genres.some((g) => g === f.genre));
+        if (f.watched === "watched") items = items.filter((i) => i.watched);
+        if (f.watched === "unwatched") items = items.filter((i) => !i.watched);
+
+        const desc = f.sortDir === "desc";
+        items.sort((a, b) => {
+          let av;
+          let bv;
+          if (f.sortBy === "name") {
+            av = a.name.toLowerCase();
+            bv = b.name.toLowerCase();
+            return desc ? bv.localeCompare(av) : av.localeCompare(bv);
+          }
+          if (f.sortBy === "type") {
+            av = a.type;
+            bv = b.type;
+            return desc ? bv.localeCompare(av) : av.localeCompare(bv);
+          }
+          if (f.sortBy === "year") {
+            av = a.year ?? (desc ? -1 : 1e9);
+            bv = b.year ?? (desc ? -1 : 1e9);
+          } else {
+            av = a.ranking ?? (desc ? -1 : 1e9);
+            bv = b.ranking ?? (desc ? -1 : 1e9);
+          }
+          return desc ? bv - av : av - bv;
+        });
+
+        return items;
+      }
+
+      function renderTable() {
+        const items = visibleItems();
+        const f = getFilters();
+        els.resultMeta.textContent = `${items.length} item${items.length === 1 ? "" : "s"} from your Stremio library`;
+        els.sortMeta.textContent = `sorted by ${f.sortBy} · ${f.sortDir}`;
+
+        els.tableBody.innerHTML = items.map((item, index) => {
+          const rank = item.ranking == null ? "—" : item.ranking.toFixed(1);
+          const year = item.year == null ? "—" : String(item.year);
+          const genres = item.genres.length ? item.genres.join(", ") : "—";
+          const imdb = item.id.startsWith("tt")
+            ? `<a class="linkish" href="https://www.imdb.com/title/${escapeAttr(item.id)}/" target="_blank" rel="noopener noreferrer">Open</a>`
+            : `<span class="muted">—</span>`;
+          const rankClass = item.ranking != null && item.ranking >= 8 ? "rank-hi" : "";
+          return `<tr>
+            <td class="num muted">${index + 1}</td>
+            <td><span class="type-chip">${escapeHtml(item.type)}</span></td>
+            <td><strong>${escapeHtml(item.name)}</strong></td>
+            <td class="center">${escapeHtml(year)}</td>
+            <td class="num ${rankClass}">${escapeHtml(rank)}</td>
+            <td class="center ${item.watched ? "ok" : "muted"}">${item.watched ? "yes" : "no"}</td>
+            <td class="muted">${escapeHtml(genres)}</td>
+            <td>${imdb}</td>
+          </tr>`;
+        }).join("");
+
+        if (!els.statsPanel.classList.contains("hidden")) renderStats(items);
+      }
+
+      function renderStats(items) {
+        const byType = {};
+        const byDecade = {};
+        const byGenre = {};
+        let watched = 0;
+        let rankingSum = 0;
+        let rankingCount = 0;
+
+        for (const item of items) {
+          byType[item.type] = (byType[item.type] || 0) + 1;
+          if (item.watched) watched++;
+          if (item.ranking != null) {
+            rankingSum += item.ranking;
+            rankingCount++;
+          }
+          if (item.year != null) {
+            const decade = `${Math.floor(item.year / 10) * 10}s`;
+            byDecade[decade] = (byDecade[decade] || 0) + 1;
+          }
+          for (const g of item.genres) byGenre[g] = (byGenre[g] || 0) + 1;
+        }
+
+        const topGenres = Object.entries(byGenre).sort((a, b) => b[1] - a[1]).slice(0, 8);
+        const avg = rankingCount ? (rankingSum / rankingCount).toFixed(2) : "—";
+        const list = (entries) =>
+          entries.map(([k, v]) => `<li><span>${escapeHtml(k)}</span><span>${v}</span></li>`).join("") ||
+          "<li><span>—</span><span>0</span></li>";
+
+        els.statsPanel.innerHTML = `
+          <div class="stat"><h3>Items</h3><strong>${items.length}</strong></div>
+          <div class="stat"><h3>Watched</h3><strong>${watched}</strong><ul><li><span>Unwatched</span><span>${items.length - watched}</span></li></ul></div>
+          <div class="stat"><h3>Avg ranking</h3><strong>${avg}</strong><ul><li><span>Ranked titles</span><span>${rankingCount}</span></li></ul></div>
+          <div class="stat"><h3>By type</h3><ul>${list(Object.entries(byType).sort((a, b) => b[1] - a[1]))}</ul></div>
+          <div class="stat"><h3>By decade</h3><ul>${list(Object.entries(byDecade).sort((a, b) => a[0].localeCompare(b[0])))}</ul></div>
+          <div class="stat"><h3>Top genres</h3><ul>${list(topGenres)}</ul></div>
+        `;
+      }
+
+      function exportCsv() {
+        const items = visibleItems();
+        const rows = [["name", "year", "ranking", "type", "watched", "genres", "id"]];
+        for (const item of items) {
+          rows.push([
+            item.name,
+            item.year ?? "",
+            item.ranking == null ? "" : item.ranking.toFixed(1),
+            item.type,
+            item.watched ? "yes" : "no",
+            item.genres.join(";"),
+            item.id,
+          ]);
+        }
+        const csv = rows.map((row) =>
+          row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(",")
+        ).join("\n");
+
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+        a.href = url;
+        a.download = `stremiolens-${stamp}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      async function onLogin(event) {
+        event.preventDefault();
+        assertNoCredentialStorage();
+        setError(els.loginError, "");
+
+        const email = els.email.value.trim();
+        const password = els.password.value;
+        if (!email || !password) {
+          setError(els.loginError, "Stremio account email and password are required.");
+          return;
+        }
+
+        els.loginBtn.disabled = true;
+        try {
+          setProgress("Signing in to your Stremio account…", 0.08);
+          const authKey = await login(email, password);
+          els.password.value = "";
+
+          setProgress("Fetching Stremio library…", 0.2);
+          const raw = await fetchLibrary(authKey);
+
+          setProgress("Enriching metadata via Cinemeta…", 0.3);
+          const items = await enrichLibrary(raw, (done, total) => {
+            const ratio = 0.3 + (done / Math.max(total, 1)) * 0.7;
+            setProgress(`Enriching metadata… ${done}/${total}`, ratio);
+          });
+
+          session.authKey = authKey;
+          session.email = email;
+          session.items = items;
+
+          fillGenreOptions(items);
+          els.sessionLabel.textContent = `Connected as ${email} · Stremio account library`;
+          hide(els.loginView);
+          show(els.appView);
+          els.sortBy.value = "ranking";
+          els.sortDir.value = "desc";
+          renderTable();
+          hide(els.loginProgress);
+        } catch (err) {
+          const msg = err?.message || String(err);
+          let hint = msg;
+          if (/Failed to fetch|NetworkError|CORS/i.test(msg)) {
+            hint += " — serve this page over HTTPS (e.g. GitHub Pages), not as a local file.";
+          }
+          setError(els.loginError, hint);
+          hide(els.loginProgress);
+          els.password.value = "";
+        } finally {
+          els.loginBtn.disabled = false;
+          assertNoCredentialStorage();
+        }
+      }
+
+      function clearFilters() {
+        els.search.value = "";
+        els.typeFilter.value = "all";
+        els.watchedFilter.value = "all";
+        els.genreFilter.value = "";
+        els.minRanking.value = "";
+        els.yearFrom.value = "";
+        els.yearTo.value = "";
+        els.sortBy.value = "ranking";
+        els.sortDir.value = "desc";
+        renderTable();
+      }
+
+      assertNoCredentialStorage();
+      els.loginForm.addEventListener("submit", onLogin);
+      [
+        els.search, els.typeFilter, els.watchedFilter, els.genreFilter,
+        els.minRanking, els.yearFrom, els.yearTo, els.sortBy, els.sortDir,
+      ].forEach((el) => el.addEventListener("input", renderTable));
+      els.clearFilters.addEventListener("click", clearFilters);
+      els.exportCsv.addEventListener("click", exportCsv);
+      els.signOut.addEventListener("click", signOut);
+      els.toggleStats.addEventListener("click", () => {
+        els.statsPanel.classList.toggle("hidden");
+        if (!els.statsPanel.classList.contains("hidden")) renderStats(visibleItems());
+      });
+
+      document.querySelectorAll("thead th[data-sort]").forEach((th) => {
+        th.addEventListener("click", () => {
+          const key = th.dataset.sort;
+          if (key === "index" || key === "genres") return;
+          if (key === "watched") {
+            els.watchedFilter.value = els.watchedFilter.value === "watched" ? "all" : "watched";
+            renderTable();
+            return;
+          }
+          if (els.sortBy.value === key) {
+            els.sortDir.value = els.sortDir.value === "desc" ? "asc" : "desc";
+          } else {
+            els.sortBy.value = key;
+            els.sortDir.value = key === "name" || key === "type" ? "asc" : "desc";
+          }
+          renderTable();
+        });
+      });
+
+      window.addEventListener("beforeunload", () => {
+        session.authKey = null;
+        session.email = null;
+        session.items = [];
+        clearSensitiveForm();
+      });
+    })();
+  </script>
+</body>
+</html>
