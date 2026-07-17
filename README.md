@@ -106,6 +106,18 @@ Full catalog search for any movie or series across Cinemeta.
 
 Rich metadata for any title — poster, description, cast, director, trailer embed, and IMDb link.
 
+### Torrentio streams
+
+Open **Torrentio links** from a title’s details modal:
+
+- Loads streams from `torrentio.strem.fun`
+- Filter by **quality**, **source**, and **min seeders**
+- **Copy magnet** or **Open / download** (magnet)
+- Copy/open direct URLs when present
+- Series: choose season & episode
+
+> Unofficial Torrentio integration. StremioLens does not host files. Use only content you have rights to access.
+
 ### Library write
 
 Add titles to or remove them from your Stremio library via `datastorePut` — changes sync to your official Stremio account.

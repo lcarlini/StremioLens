@@ -58,6 +58,24 @@
     .chip:hover,.chip.active{border-color:rgba(255,90,54,.45);color:var(--ink);background:rgba(255,90,54,.12)}
     .empty{padding:2rem 1rem;text-align:center;border:1px dashed var(--line);border-radius:16px;color:var(--muted)}
     .empty strong{display:block;color:var(--ink);margin-bottom:.35rem;font-size:1.05rem}
+    .streams-modal{width:min(920px,100%);max-height:min(92vh,920px);overflow:auto;background:#0e1520;border:1px solid var(--line);border-radius:18px 18px 0 0;box-shadow:var(--shadow)}
+    .streams-head{position:sticky;top:0;z-index:2;padding:1rem 1.1rem .85rem;background:rgba(14,21,32,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(10px)}
+    .streams-head h3{margin:0 0 .25rem;font-family:var(--font-display);font-size:1.55rem;letter-spacing:.04em}
+    .streams-filters{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.75rem;align-items:end}
+    .streams-filters .field{flex:1 1 110px;min-width:100px}
+    .stream-list{display:grid;gap:.55rem;padding:1rem 1.1rem 1.25rem}
+    .stream-row{display:grid;grid-template-columns:1fr auto;gap:.75rem;align-items:center;padding:.75rem .85rem;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+    .stream-row .q{display:inline-block;padding:.15rem .45rem;border-radius:999px;border:1px solid rgba(62,198,255,.35);color:var(--cyan);font-size:.72rem;font-weight:700;margin-right:.35rem}
+    .stream-row .title{font-size:.86rem;line-height:1.35;word-break:break-word}
+    .stream-row .meta{margin-top:.3rem;color:var(--muted);font-size:.75rem;display:flex;flex-wrap:wrap;gap:.35rem .7rem}
+    .stream-actions{display:flex;flex-wrap:wrap;gap:.35rem;justify-content:flex-end}
+    @media (max-width:700px){.stream-row{grid-template-columns:1fr}.stream-actions{justify-content:stretch}.stream-actions .btn{flex:1}}
+    .disclaimer{margin:.55rem 0 0;font-size:.72rem;color:var(--muted);line-height:1.4}
+    .global-error-badge{position:fixed;left:50%;top:calc(12px + var(--safe-t));transform:translateX(-50%);z-index:100;width:min(920px,calc(100% - 1.25rem));padding:.85rem 1rem;border-radius:14px;border:1px solid rgba(255,107,122,.55);background:rgba(40,12,16,.96);box-shadow:0 18px 40px rgba(0,0,0,.45);color:#ffd6db;backdrop-filter:blur(10px)}
+    .global-error-badge strong{display:block;margin-bottom:.35rem;color:#fff;font-size:.9rem}
+    .global-error-badge pre{margin:0;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Consolas,monospace;font-size:.78rem;line-height:1.4;max-height:40vh;overflow:auto}
+    .global-error-badge .row{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.65rem;align-items:center;justify-content:space-between}
+    .global-error-badge .meta{font-size:.72rem;color:#ffb4bc}
     .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:1rem;margin-bottom:1rem}
     .hero-copy,.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(16px)}
     .hero-copy{position:relative;overflow:hidden;padding:clamp(1.15rem,3vw,2rem);min-height:min(48vw,300px);display:flex;flex-direction:column;justify-content:flex-end}
@@ -361,15 +379,57 @@
   </nav>
 
   <div id="modalRoot" class="modal-back hidden" role="dialog" aria-modal="true"></div>
+  <div id="streamsRoot" class="modal-back hidden" role="dialog" aria-modal="true"></div>
   <div id="toast" class="toast hidden"></div>
+
+  <div id="globalErrorBadge" class="global-error-badge hidden" role="alert" aria-live="assertive">
+    <strong>StremioLens error</strong>
+    <pre id="globalErrorText"></pre>
+    <div class="row">
+      <span class="meta" id="globalErrorMeta"></span>
+      <button type="button" class="btn ghost sm" id="globalErrorDismiss">Dismiss</button>
+    </div>
+  </div>
+
+  <script>
+    /* Early error surface — runs even if the main app fails to parse/boot. */
+    (function () {
+      var badge = document.getElementById("globalErrorBadge");
+      var text = document.getElementById("globalErrorText");
+      var meta = document.getElementById("globalErrorMeta");
+      var dismiss = document.getElementById("globalErrorDismiss");
+      function show(msg, where) {
+        if (!badge || !text) return;
+        text.textContent = String(msg || "Unknown error");
+        if (meta) meta.textContent = where || "";
+        badge.classList.remove("hidden");
+      }
+      window.__stremioLensShowError = show;
+      if (dismiss) dismiss.onclick = function () { badge.classList.add("hidden"); };
+      window.addEventListener("error", function (e) {
+        var msg = (e && e.message) ? e.message : String(e);
+        if (e && e.filename) msg += "\n" + e.filename + ":" + (e.lineno || "?") + ":" + (e.colno || "?");
+        show(msg, "window.onerror");
+      });
+      window.addEventListener("unhandledrejection", function (e) {
+        var reason = e && e.reason;
+        show((reason && reason.stack) || (reason && reason.message) || String(reason), "unhandledrejection");
+      });
+    })();
+  </script>
 
   <script>
   (() => {
     "use strict";
+    try {
     const API="https://api.strem.io/api", META="https://cinemeta-live.strem.io/meta", CATALOG="https://v3-cinemeta.strem.io/catalog";
+    const TORRENTIO="https://torrentio.strem.fun";
     const AUTHOR={name:"Leandro Carlini Mingorance", titleKey:"engineer", url:"https://lcarlini.github.io/lcarlini/"};
-    const I18N={
-      en:{
+    const BUILD_ID="2026-07-17-r3";
+
+    /* Separate assignments avoid "Unexpected identifier 'pt'" if a comma is ever missing between locales. */
+    const I18N = Object.create(null);
+    I18N.en = {
         tagline:"for your Stremio account", pillSecure:"Credentials never stored", pillUnofficial:"Unofficial",
         kicker:"Stremio account required", heroTitle:"LIBRARY &amp;<br /><span>DISCOVER</span>",
         heroText:"Sign in with the same Stremio account used in the official apps. Browse your library with poster covers, discover catalogs, search any title, and add titles to your Stremio library.",
@@ -402,9 +462,16 @@
         statsItems:"Items", statsWatched:"Watched", statsAvg:"Avg ranking", statsType:"By type", statsDecade:"By decade", statsGenres:"Top genres",
         yearHintFilter:"Optional filter on results", yearHintCatalog:"Required for New / by year", yearAny:"Any year",
         surpriseMe:"Surprise me", notInLibrary:"Not in library", loadMore:"Load more", copied:"Copied",
-        nothingToPick:"No titles available to pick.", onlyMissing:"Showing titles not in your library"
-      },
-      pt:{
+        nothingToPick:"No titles available to pick.", onlyMissing:"Showing titles not in your library",
+        torrentio:"Torrentio links", torrentioTitle:"Torrentio streams", loadingStreams:"Loading Torrentio streams…",
+        noStreams:"No streams found.", quality:"Quality", source:"Source", minSeeders:"Min seeders",
+        allQualities:"All qualities", allSources:"All sources", streamsCount:"{n} links",
+        copyMagnet:"Copy magnet", openMagnet:"Open / download", copyLink:"Copy link", openLink:"Open link",
+        season:"Season", episode:"Episode", loadEpisode:"Load episode",
+        torrentioNote:"Links from the unofficial Torrentio addon (torrentio.strem.fun). Use only content you have rights to access. StremioLens does not host files.",
+        needImdb:"Torrentio needs an IMDb id (tt...).", seriesEpisodeHint:"For series, set season & episode (e.g. 1 / 1)."
+    };
+    I18N.pt = {
         tagline:"para sua conta Stremio", pillSecure:"Credenciais nunca salvas", pillUnofficial:"Não oficial",
         kicker:"Conta Stremio necessária", heroTitle:"BIBLIOTECA &amp;<br /><span>DESCOBRIR</span>",
         heroText:"Entre com a mesma conta Stremio dos apps oficiais. Veja sua biblioteca com capas, descubra catálogos, busque qualquer título e adicione à sua biblioteca Stremio.",
@@ -437,9 +504,16 @@
         statsItems:"Itens", statsWatched:"Assistidos", statsAvg:"Nota média", statsType:"Por tipo", statsDecade:"Por década", statsGenres:"Top gêneros",
         yearHintFilter:"Filtro opcional nos resultados", yearHintCatalog:"Obrigatório em Novos / por ano", yearAny:"Qualquer ano",
         surpriseMe:"Me surpreenda", notInLibrary:"Fora da biblioteca", loadMore:"Carregar mais", copied:"Copiado",
-        nothingToPick:"Nenhum título disponível.", onlyMissing:"Mostrando títulos fora da sua biblioteca"
-      },
-      es:{
+        nothingToPick:"Nenhum título disponível.", onlyMissing:"Mostrando títulos fora da sua biblioteca",
+        torrentio:"Links Torrentio", torrentioTitle:"Streams Torrentio", loadingStreams:"Carregando streams Torrentio…",
+        noStreams:"Nenhum stream encontrado.", quality:"Qualidade", source:"Fonte", minSeeders:"Seeds mín.",
+        allQualities:"Todas as qualidades", allSources:"Todas as fontes", streamsCount:"{n} links",
+        copyMagnet:"Copiar magnet", openMagnet:"Abrir / baixar", copyLink:"Copiar link", openLink:"Abrir link",
+        season:"Temporada", episode:"Episódio", loadEpisode:"Carregar episódio",
+        torrentioNote:"Links do addon não oficial Torrentio (torrentio.strem.fun). Use apenas conteúdo que você tem direito de acessar. O StremioLens não hospeda arquivos.",
+        needImdb:"Torrentio precisa de um id IMDb (tt...).", seriesEpisodeHint:"Para séries, informe temporada e episódio (ex.: 1 / 1)."
+    };
+    I18N.es = {
         tagline:"para tu cuenta de Stremio", pillSecure:"Credenciales nunca guardadas", pillUnofficial:"No oficial",
         kicker:"Se requiere cuenta Stremio", heroTitle:"BIBLIOTECA &amp;<br /><span>DESCUBRIR</span>",
         heroText:"Inicia sesión con la misma cuenta Stremio de las apps oficiales. Explora tu biblioteca con portadas, descubre catálogos, busca cualquier título y añádelo a tu biblioteca Stremio.",
@@ -472,8 +546,14 @@
         statsItems:"Elementos", statsWatched:"Vistos", statsAvg:"Nota media", statsType:"Por tipo", statsDecade:"Por década", statsGenres:"Top géneros",
         yearHintFilter:"Filtro opcional sobre resultados", yearHintCatalog:"Obligatorio en Nuevos / por año", yearAny:"Cualquier año",
         surpriseMe:"Sorpréendeme", notInLibrary:"Fuera de biblioteca", loadMore:"Cargar más", copied:"Copiado",
-        nothingToPick:"No hay títulos disponibles.", onlyMissing:"Mostrando títulos fuera de tu biblioteca"
-      }
+        nothingToPick:"No hay títulos disponibles.", onlyMissing:"Mostrando títulos fuera de tu biblioteca",
+        torrentio:"Enlaces Torrentio", torrentioTitle:"Streams Torrentio", loadingStreams:"Cargando streams Torrentio…",
+        noStreams:"No se encontraron streams.", quality:"Calidad", source:"Fuente", minSeeders:"Seeds mín.",
+        allQualities:"Todas las calidades", allSources:"Todas las fuentes", streamsCount:"{n} enlaces",
+        copyMagnet:"Copiar magnet", openMagnet:"Abrir / descargar", copyLink:"Copiar enlace", openLink:"Abrir enlace",
+        season:"Temporada", episode:"Episodio", loadEpisode:"Cargar episodio",
+        torrentioNote:"Enlaces del addon no oficial Torrentio (torrentio.strem.fun). Úsalo solo con contenido que tengas derecho a acceder. StremioLens no aloja archivos.",
+        needImdb:"Torrentio necesita un id IMDb (tt...).", seriesEpisodeHint:"Para series, indica temporada y episodio (ej.: 1 / 1)."
     };
 
     let lang = "en";
@@ -518,7 +598,7 @@
       minRanking:$("minRanking"), yearFrom:$("yearFrom"), yearTo:$("yearTo"), sortBy:$("sortBy"), sortDir:$("sortDir"),
       statsPanel:$("statsPanel"), appError:$("appError"), libraryToolbar:$("libraryToolbar"), discoverToolbar:$("discoverToolbar"),
       searchToolbar:$("searchToolbar"), discType:$("discType"), discCatalog:$("discCatalog"), discYear:$("discYear"), discGenre:$("discGenre"),
-      searchCatalog:$("searchCatalog"), searchType:$("searchType"), modalRoot:$("modalRoot"), toast:$("toast"), yearHint:$("yearHint"),
+      searchCatalog:$("searchCatalog"), searchType:$("searchType"), modalRoot:$("modalRoot"), streamsRoot:$("streamsRoot"), toast:$("toast"), yearHint:$("yearHint"),
     };
     const years=[]; for(let y=2026;y>=1920;y--) years.push(y);
     function rebuildYearOptions(preserve) {
@@ -760,11 +840,14 @@
             ${detail.inLibrary?`<button type="button" class="btn danger sm" id="btnRemoveLib">${escapeHtml(t("remLib"))}</button>`:`<button type="button" class="btn ok sm" id="btnAddLib">${escapeHtml(t("addLib"))}</button>`}
             ${imdb?`<a class="btn ghost sm" href="${imdb}" target="_blank" rel="noopener noreferrer">IMDb</a>`:""}
             ${trailerUrl?`<a class="btn ghost sm" href="${escapeAttr(trailerUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(t("trailer"))}</a>`:""}
+            ${(detail.id||"").startsWith("tt")?`<button type="button" class="btn cyan sm" id="btnTorrentio">${escapeHtml(t("torrentio"))}</button>`:""}
             <button type="button" class="btn ghost sm" id="btnCopyId">${escapeHtml(detail.id || "ID")}</button>
             <button type="button" class="btn ghost sm" id="btnCloseModal">${escapeHtml(t("close"))}</button>
           </div>
+          <p class="disclaimer">${escapeHtml(t("torrentioNote"))}</p>
         </div></div></div>`;
       $("btnCloseModal").onclick=closeModal; els.modalRoot.onclick=e=>{ if(e.target===els.modalRoot) closeModal(); };
+      $("btnTorrentio")?.addEventListener("click", () => openTorrentioModal(detail));
       $("btnCopyId")?.addEventListener("click", async () => {
         try { await navigator.clipboard.writeText(detail.id || detail.name); toast(t("copied")); } catch (_) { toast(detail.id || detail.name); }
       });
@@ -773,6 +856,162 @@
       if(remBtn) remBtn.onclick=async()=>{ remBtn.disabled=true; try{ await removeFromLibrary(detail); toast(t("removedToast")); closeModal(); render(); }catch(err){ toast(err.message||String(err)); remBtn.disabled=false; } };
     }
     function closeModal(){ hide(els.modalRoot); els.modalRoot.innerHTML=""; }
+    function closeStreamsModal(){ hide(els.streamsRoot); els.streamsRoot.innerHTML=""; }
+
+    function extractInfoHash(stream) {
+      if (stream.infoHash) return String(stream.infoHash).toLowerCase();
+      const url = stream.url || stream.magnet || "";
+      const m = String(url).match(/[a-fA-F0-9]{40}/);
+      return m ? m[0].toLowerCase() : null;
+    }
+    function magnetFromStream(stream) {
+      if (stream.magnet) return stream.magnet;
+      const hash = extractInfoHash(stream);
+      if (!hash) return null;
+      const name = (stream.behaviorHints && stream.behaviorHints.filename) || stream.name || "stream";
+      let magnet = `magnet:?xt=urn:btih:${hash}&dn=${encodeURIComponent(String(name).replace(/\n/g, " "))}`;
+      const sources = stream.sources || [];
+      sources.forEach((s) => {
+        if (typeof s === "string" && s.startsWith("tracker:")) magnet += `&tr=${encodeURIComponent(s.slice(8))}`;
+        else if (typeof s === "string" && s.startsWith("http")) magnet += `&tr=${encodeURIComponent(s)}`;
+      });
+      return magnet;
+    }
+    function parseQuality(name="") {
+      const n = String(name).toLowerCase();
+      if (/\b(2160p|4k|uhd)\b/.test(n)) return "2160p";
+      if (/\b1080p\b/.test(n)) return "1080p";
+      if (/\b720p\b/.test(n)) return "720p";
+      if (/\b480p\b/.test(n)) return "480p";
+      if (/\b360p\b/.test(n)) return "360p";
+      return "other";
+    }
+    function parseStreamMeta(stream) {
+      const blob = `${stream.name || ""}\n${stream.title || ""}\n${stream.description || ""}`;
+      const seedersMatch = blob.match(/👤\s*(\d+)/) || blob.match(/(\d+)\s*seeds?/i);
+      const sizeMatch = blob.match(/💾\s*([0-9.]+\s*[GMK]B)/i) || blob.match(/([0-9.]+\s*[GMK]B)/i);
+      const sourceMatch = blob.match(/⚙️\s*([^\n]+)/);
+      const quality = parseQuality(blob);
+      const lines = String(stream.title || stream.description || stream.name || "").split("\n").map((x) => x.trim()).filter(Boolean);
+      return {
+        raw: stream,
+        label: (stream.name || "").replace(/\n/g, " · ") || "Torrentio",
+        title: lines[0] || stream.name || "Stream",
+        detail: lines.slice(1).join(" · "),
+        quality,
+        seeders: seedersMatch ? Number(seedersMatch[1]) : null,
+        size: sizeMatch ? sizeMatch[1].replace(/\s+/g, " ") : null,
+        source: sourceMatch ? sourceMatch[1].trim() : "Torrentio",
+        magnet: magnetFromStream(stream),
+        url: stream.url || null,
+        infoHash: extractInfoHash(stream),
+      };
+    }
+    async function fetchTorrentioStreams(type, id) {
+      const res = await fetch(`${TORRENTIO}/stream/${encodeURIComponent(type)}/${encodeURIComponent(id)}.json`, { redirect: "follow" });
+      if (!res.ok) throw new Error(`Torrentio HTTP ${res.status}`);
+      const data = await res.json();
+      return (data.streams || []).map(parseStreamMeta);
+    }
+    function openTorrentioModal(detail) {
+      if (!(detail.id || "").startsWith("tt")) { toast(t("needImdb")); return; }
+      const isSeries = detail.type === "series";
+      show(els.streamsRoot);
+      els.streamsRoot.innerHTML = `<div class="streams-modal">
+        <div class="streams-head">
+          <h3>${escapeHtml(t("torrentioTitle"))}</h3>
+          <div class="muted">${escapeHtml(detail.name)} · ${escapeHtml(detail.id)}</div>
+          ${isSeries ? `<div class="streams-filters">
+            <div class="field"><label>${escapeHtml(t("season"))}</label><input id="torSeason" type="number" min="1" value="1" /></div>
+            <div class="field"><label>${escapeHtml(t("episode"))}</label><input id="torEpisode" type="number" min="1" value="1" /></div>
+            <button type="button" class="btn cyan sm" id="torLoadEp">${escapeHtml(t("loadEpisode"))}</button>
+          </div><p class="disclaimer">${escapeHtml(t("seriesEpisodeHint"))}</p>` : ""}
+          <div class="streams-filters" id="torFilters"></div>
+          <p class="disclaimer">${escapeHtml(t("torrentioNote"))}</p>
+          <div style="margin-top:.65rem"><button type="button" class="btn ghost sm" id="torClose">${escapeHtml(t("close"))}</button></div>
+        </div>
+        <div class="stream-list" id="torList"><p class="muted">${escapeHtml(t("loadingStreams"))}</p></div>
+      </div>`;
+      els.streamsRoot.onclick = (e) => { if (e.target === els.streamsRoot) closeStreamsModal(); };
+      $("torClose").onclick = closeStreamsModal;
+      const state = { streams: [], quality: "", source: "", minSeeders: 0 };
+
+      function renderStreams() {
+        let list = state.streams.slice();
+        if (state.quality) list = list.filter((s) => s.quality === state.quality);
+        if (state.source) list = list.filter((s) => s.source === state.source);
+        if (state.minSeeders > 0) list = list.filter((s) => (s.seeders || 0) >= state.minSeeders);
+        const qualities = [...new Set(state.streams.map((s) => s.quality))];
+        const sources = [...new Set(state.streams.map((s) => s.source).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+        $("torFilters").innerHTML = `
+          <div class="field"><label>${escapeHtml(t("quality"))}</label>
+            <select id="torQuality"><option value="">${escapeHtml(t("allQualities"))}</option>
+              ${qualities.map((q) => `<option value="${escapeAttr(q)}" ${state.quality===q?"selected":""}>${escapeHtml(q)}</option>`).join("")}
+            </select></div>
+          <div class="field"><label>${escapeHtml(t("source"))}</label>
+            <select id="torSource"><option value="">${escapeHtml(t("allSources"))}</option>
+              ${sources.map((s) => `<option value="${escapeAttr(s)}" ${state.source===s?"selected":""}>${escapeHtml(s)}</option>`).join("")}
+            </select></div>
+          <div class="field"><label>${escapeHtml(t("minSeeders"))}</label>
+            <input id="torSeeds" type="number" min="0" value="${state.minSeeders}" /></div>
+          <div class="muted" style="align-self:center">${escapeHtml(t("streamsCount", { n: list.length }))}</div>`;
+        $("torQuality").onchange = () => { state.quality = $("torQuality").value; renderStreams(); };
+        $("torSource").onchange = () => { state.source = $("torSource").value; renderStreams(); };
+        $("torSeeds").oninput = () => { state.minSeeders = Number($("torSeeds").value) || 0; renderStreams(); };
+
+        if (!list.length) {
+          $("torList").innerHTML = `<div class="empty"><strong>${escapeHtml(t("noStreams"))}</strong></div>`;
+          return;
+        }
+        $("torList").innerHTML = list.map((s, idx) => `
+          <div class="stream-row" data-idx="${idx}">
+            <div>
+              <div class="title"><span class="q">${escapeHtml(s.quality)}</span>${escapeHtml(s.title)}</div>
+              <div class="meta">
+                <span>${escapeHtml(s.label)}</span>
+                ${s.size ? `<span>💾 ${escapeHtml(s.size)}</span>` : ""}
+                ${s.seeders != null ? `<span>👤 ${s.seeders}</span>` : ""}
+                <span>⚙️ ${escapeHtml(s.source)}</span>
+              </div>
+            </div>
+            <div class="stream-actions">
+              ${s.magnet ? `<button type="button" class="btn ghost sm tor-copy" data-kind="magnet">${escapeHtml(t("copyMagnet"))}</button>
+                <a class="btn cyan sm" href="${escapeAttr(s.magnet)}">${escapeHtml(t("openMagnet"))}</a>` : ""}
+              ${s.url ? `<button type="button" class="btn ghost sm tor-copy" data-kind="url">${escapeHtml(t("copyLink"))}</button>
+                <a class="btn ghost sm" href="${escapeAttr(s.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(t("openLink"))}</a>` : ""}
+            </div>
+          </div>`).join("");
+        $("torList").querySelectorAll(".stream-row").forEach((row) => {
+          const s = list[Number(row.dataset.idx)];
+          row.querySelectorAll(".tor-copy").forEach((btn) => btn.addEventListener("click", async () => {
+            const text = btn.dataset.kind === "url" ? s.url : s.magnet;
+            try { await navigator.clipboard.writeText(text); toast(t("copied")); } catch (_) { toast(text); }
+          }));
+        });
+      }
+
+      async function load(id) {
+        $("torList").innerHTML = `<p class="muted">${escapeHtml(t("loadingStreams"))}</p>`;
+        try {
+          state.streams = await fetchTorrentioStreams(detail.type === "series" ? "series" : "movie", id);
+          state.quality = ""; state.source = ""; state.minSeeders = 0;
+          renderStreams();
+        } catch (err) {
+          $("torList").innerHTML = `<div class="empty"><strong>${escapeHtml(err.message || String(err))}</strong></div>`;
+        }
+      }
+
+      if (isSeries) {
+        $("torLoadEp").onclick = () => {
+          const s = Number($("torSeason").value) || 1;
+          const e = Number($("torEpisode").value) || 1;
+          load(`${detail.id}:${s}:${e}`);
+        };
+        $("torLoadEp").click();
+      } else {
+        load(detail.id);
+      }
+    }
 
     function setMode(mode){
       session.mode=mode;
@@ -855,17 +1094,26 @@
     assertNoCredentialStorage();
     applyI18n();
     document.querySelectorAll(".lang button").forEach(btn=>btn.addEventListener("click",()=>{ lang=btn.dataset.lang; applyI18n(); }));
-    els.loginForm.addEventListener("submit",onLogin);
+    els.loginForm.addEventListener("submit", async (ev) => {
+      try { await onLogin(ev); }
+      catch (err) {
+        const msg = err?.stack || err?.message || String(err);
+        setError(els.loginError, msg);
+        if (window.__stremioLensShowError) window.__stremioLensShowError(msg, "login");
+      }
+    });
     $("signOut").onclick=signOut; $("clearFilters").onclick=clearFilters; $("exportCsv").onclick=exportCsv;
     $("toggleStats").onclick=()=>{ els.statsPanel.classList.toggle("hidden"); if(!els.statsPanel.classList.contains("hidden")) renderStats(visibleItems()); };
-    $("refreshLib").onclick=refreshLibrary; $("loadDiscover").onclick=()=>loadDiscover(false); $("runSearch").onclick=runSearch;
-    $("loadMore").onclick=()=>loadDiscover(true);
-    $("randomPick").onclick=()=>{ const items=visibleItems(); if(!items.length){ toast(t("nothingToPick")); return; } openDetails(items[Math.floor(Math.random()*items.length)]); };
+    $("refreshLib").onclick=()=>refreshLibrary().catch((err)=>window.__stremioLensShowError?.(err?.message||String(err),"refresh"));
+    $("loadDiscover").onclick=()=>loadDiscover(false).catch((err)=>window.__stremioLensShowError?.(err?.message||String(err),"discover"));
+    $("runSearch").onclick=()=>runSearch().catch((err)=>window.__stremioLensShowError?.(err?.message||String(err),"search"));
+    $("loadMore").onclick=()=>loadDiscover(true).catch((err)=>window.__stremioLensShowError?.(err?.message||String(err),"loadMore"));
+    $("randomPick").onclick=()=>{ try { const items=visibleItems(); if(!items.length){ toast(t("nothingToPick")); return; } openDetails(items[Math.floor(Math.random()*items.length)]); } catch(err){ window.__stremioLensShowError?.(err?.message||String(err),"random"); } };
     $("onlyNotInLib").onclick=()=>{ session.onlyMissing=!session.onlyMissing; render(); };
-    els.searchCatalog.addEventListener("keydown",e=>{ if(e.key==="Enter") runSearch(); });
+    els.searchCatalog.addEventListener("keydown",e=>{ if(e.key==="Enter") runSearch().catch((err)=>window.__stremioLensShowError?.(err?.message||String(err),"search")); });
     els.discCatalog.addEventListener("change",()=>{ syncDiscoverControls(); });
     els.discYear.addEventListener("change",()=>{
-      if (els.discCatalog.value === "year") loadDiscover(false);
+      if (els.discCatalog.value === "year") loadDiscover(false).catch((err)=>window.__stremioLensShowError?.(err?.message||String(err),"discover"));
       else render();
     });
 
@@ -876,7 +1124,13 @@
     [els.searchLib,els.typeFilter,els.watchedFilter,els.genreFilter,els.minRanking,els.yearFrom,els.yearTo,els.sortBy,els.sortDir]
       .forEach(el=>el.addEventListener("input",render));
     window.addEventListener("beforeunload",()=>{ session.authKey=null; session.email=null; session.library=[]; session.catalog=[]; els.password.value=""; els.email.value=""; });
-    document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
+    document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeStreamsModal(); closeModal(); } });
+    document.documentElement.dataset.build = BUILD_ID;
+    } catch (bootErr) {
+      const msg = (bootErr && bootErr.stack) || (bootErr && bootErr.message) || String(bootErr);
+      if (window.__stremioLensShowError) window.__stremioLensShowError(msg, "boot");
+      else alert(msg);
+    }
   })();
   </script>
 </body>
