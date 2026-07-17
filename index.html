@@ -536,7 +536,7 @@
     const API="https://api.strem.io/api", META="https://cinemeta-live.strem.io/meta", CATALOG="https://v3-cinemeta.strem.io/catalog";
     const TORRENTIO="https://torrentio.strem.fun";
     const AUTHOR={name:"Leandro Carlini Mingorance", titleKey:"engineer", url:"https://lcarlini.github.io/lcarlini/"};
-    const BUILD_ID="2026-07-17-r5";
+    const BUILD_ID="2026-07-17-r6";
 
     /* Separate assignments avoid "Unexpected identifier 'pt'" if a comma is ever missing between locales. */
     const I18N = Object.create(null);
@@ -598,7 +598,14 @@
         playerCodecHint:"4K / HDR / Atmos depend on your browser, GPU, and display. HEVC & Dolby Vision may need Edge/Safari or a hardware decoder.",
         playerPeers:"Peers", playerDown:"Down", playerProgress:"Progress", playerRes:"Resolution",
         playerBuffer:"Buffer", playerMode:"Mode", playerHdrNote:"HDR flagged — tone-mapped if display/OS doesn't pass HDR through.",
-        playerSwitch:"Switch stream", playerExternal:"Open externally", playerLoadingLibs:"Loading playback engine…"
+        playerSwitch:"Switch stream", playerExternal:"Open externally", playerLoadingLibs:"Loading playback engine…",
+        playerServerNeeded:"Browser cannot use normal torrent seeds. Open the Stremio desktop app (streaming server on port 11470) and try Play again — or open the magnet externally.",
+        playerServerMissing:"Stremio streaming server not found on this PC.",
+        playerServerOk:"Using Stremio streaming server",
+        playerServerProbe:"Connecting to Stremio streaming server…",
+        playerWebRtcFail:"No WebRTC peers found. Regular seed counts do not work in the browser.",
+        playerTryServer:"Retry via Stremio server",
+        streamServerHint:"Needs Stremio desktop running locally for magnet/torrent playback."
     };
     I18N.pt = {
         tagline:"para sua conta Stremio", pillSecure:"Credenciais nunca salvas", pillUnofficial:"Não oficial",
@@ -658,7 +665,14 @@
         playerCodecHint:"4K / HDR / Atmos dependem do navegador, GPU e display. HEVC e Dolby Vision podem exigir Edge/Safari ou decoder de hardware.",
         playerPeers:"Peers", playerDown:"Down", playerProgress:"Progresso", playerRes:"Resolução",
         playerBuffer:"Buffer", playerMode:"Modo", playerHdrNote:"HDR detectado — com tone-mapping se o display/SO não passar HDR.",
-        playerSwitch:"Trocar stream", playerExternal:"Abrir externamente", playerLoadingLibs:"Carregando motor de reprodução…"
+        playerSwitch:"Trocar stream", playerExternal:"Abrir externamente", playerLoadingLibs:"Carregando motor de reprodução…",
+        playerServerNeeded:"O navegador não usa seeds BitTorrent normais. Abra o app Stremio no PC (servidor na porta 11470) e tente Play de novo — ou abra o magnet externamente.",
+        playerServerMissing:"Servidor de streaming do Stremio não encontrado neste PC.",
+        playerServerOk:"Usando servidor de streaming do Stremio",
+        playerServerProbe:"Conectando ao servidor de streaming do Stremio…",
+        playerWebRtcFail:"Nenhum peer WebRTC encontrado. A contagem de seeds do Torrentio não funciona no navegador.",
+        playerTryServer:"Tentar via servidor Stremio",
+        streamServerHint:"Para magnet/torrent, deixe o Stremio desktop aberto neste PC."
     };
     I18N.es = {
         tagline:"para tu cuenta de Stremio", pillSecure:"Credenciales nunca guardadas", pillUnofficial:"No oficial",
@@ -718,7 +732,14 @@
         playerCodecHint:"4K / HDR / Atmos dependen del navegador, GPU y pantalla. HEVC y Dolby Vision pueden requerir Edge/Safari o decodificador de hardware.",
         playerPeers:"Peers", playerDown:"Down", playerProgress:"Progreso", playerRes:"Resolución",
         playerBuffer:"Buffer", playerMode:"Modo", playerHdrNote:"HDR detectado — tone-mapping si la pantalla/SO no pasa HDR.",
-        playerSwitch:"Cambiar stream", playerExternal:"Abrir externamente", playerLoadingLibs:"Cargando motor de reproducción…"
+        playerSwitch:"Cambiar stream", playerExternal:"Abrir externamente", playerLoadingLibs:"Cargando motor de reproducción…",
+        playerServerNeeded:"El navegador no usa seeds BitTorrent normales. Abre la app Stremio en el PC (servidor en el puerto 11470) e intenta Play otra vez — o abre el magnet externamente.",
+        playerServerMissing:"No se encontró el servidor de streaming de Stremio en este PC.",
+        playerServerOk:"Usando el servidor de streaming de Stremio",
+        playerServerProbe:"Conectando al servidor de streaming de Stremio…",
+        playerWebRtcFail:"No hay peers WebRTC. El contador de seeds de Torrentio no funciona en el navegador.",
+        playerTryServer:"Reintentar vía servidor Stremio",
+        streamServerHint:"Para magnet/torrent, deja Stremio desktop abierto en este PC."
     };
 
     let lang = "en";
@@ -1281,8 +1302,14 @@
       objectUrl: null,
       statsTimer: null,
       uiHideTimer: null,
+      waitTimer: null,
+      serverBase: null,
       libs: { wt: false, hls: false },
     };
+    try {
+      const savedServer = localStorage.getItem("stremiolens_stream_server");
+      if (savedServer) player.serverBase = savedServer.replace(/\/$/, "");
+    } catch (_) {}
 
     function loadScriptOnce(src, globalCheck) {
       return new Promise((resolve, reject) => {
@@ -1327,9 +1354,74 @@
       const h = Math.floor(sec / 3600);
       return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${m}:${String(s).padStart(2, "0")}`;
     }
+    function getStreamAnnounce(stream) {
+      const sources = stream?.raw?.sources;
+      if (!Array.isArray(sources)) return [];
+      return sources.map((s) => {
+        if (typeof s !== "string") return null;
+        if (s.startsWith("tracker:")) return s.slice(8);
+        if (s.startsWith("http") || s.startsWith("udp:") || s.startsWith("wss:")) return s;
+        return null;
+      }).filter(Boolean);
+    }
+    async function probeStreamServer(base) {
+      const url = `${base.replace(/\/$/, "")}/stats.json`;
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 2500);
+      try {
+        const res = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
+        if (!res.ok) return false;
+        return true;
+      } catch (_) {
+        return false;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+    async function resolveStreamServer() {
+      const candidates = [];
+      if (player.serverBase) candidates.push(player.serverBase);
+      for (let p = 11470; p <= 11474; p++) candidates.push(`http://127.0.0.1:${p}`);
+      const seen = new Set();
+      for (const base of candidates) {
+        const b = base.replace(/\/$/, "");
+        if (seen.has(b)) continue;
+        seen.add(b);
+        if (await probeStreamServer(b)) {
+          player.serverBase = b;
+          try { localStorage.setItem("stremiolens_stream_server", b); } catch (_) {}
+          return b;
+        }
+      }
+      return null;
+    }
+    function buildServerStreamUrl(base, stream) {
+      const hash = (stream.infoHash || "").toLowerCase();
+      if (!hash) return null;
+      const idx = stream.fileIdx != null && Number.isFinite(stream.fileIdx) ? String(stream.fileIdx) : "-1";
+      const u = new URL(`${base}/${hash}/${idx}`);
+      getStreamAnnounce(stream).forEach((tr) => u.searchParams.append("tr", tr));
+      return u.toString();
+    }
+    async function prepareServerTorrent(base, stream) {
+      const hash = (stream.infoHash || "").toLowerCase();
+      if (!hash) throw new Error("Missing infoHash");
+      const announce = getStreamAnnounce(stream);
+      try {
+        await fetch(`${base}/${hash}/create`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ announce }),
+        });
+      } catch (_) {
+        /* create can fail if already exists — still try streaming URL */
+      }
+      return buildServerStreamUrl(base, stream);
+    }
     function destroyPlayerEngine() {
       clearInterval(player.statsTimer); player.statsTimer = null;
       clearTimeout(player.uiHideTimer); player.uiHideTimer = null;
+      clearTimeout(player.waitTimer); player.waitTimer = null;
       try { player.hls?.destroy(); } catch (_) {}
       player.hls = null;
       try {
@@ -1361,8 +1453,23 @@
       ov.classList.remove("hidden");
       ov.innerHTML = html;
     }
-    function playerOverlayMsg(title, body, spinner) {
-      setPlayerOverlay(`<div class="msg">${spinner ? `<div class="player-spinner"></div>` : ""}<strong>${escapeHtml(title)}</strong><p>${escapeHtml(body || "")}</p></div>`);
+    function playerOverlayMsg(title, body, spinner, actionsHtml) {
+      setPlayerOverlay(`<div class="msg">${spinner ? `<div class="player-spinner"></div>` : ""}<strong>${escapeHtml(title)}</strong><p>${escapeHtml(body || "")}</p>${actionsHtml || ""}</div>`);
+    }
+    function showTorrentHelpOverlay() {
+      const magnet = player.stream?.magnet || (player.stream?.infoHash ? `magnet:?xt=urn:btih:${player.stream.infoHash}` : "");
+      playerOverlayMsg(
+        t("playerError"),
+        t("playerServerNeeded"),
+        false,
+        `<div style="margin-top:.75rem;display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center">
+          <button type="button" class="btn cyan sm" id="slRetryServer">${escapeHtml(t("playerTryServer"))}</button>
+          ${magnet ? `<a class="btn ghost sm" href="${escapeAttr(magnet)}">${escapeHtml(t("openMagnet"))}</a>` : ""}
+        </div>`
+      );
+      $("slRetryServer")?.addEventListener("click", () => {
+        if (player.stream) openPlayer(player.stream, player.detail, player.streams);
+      });
     }
     function updatePlayerStats() {
       const el = $("slStats");
@@ -1383,7 +1490,10 @@
         down = formatSpeed(player.torrent.downloadSpeed || 0);
         prog = `${Math.round((player.torrent.progress || 0) * 100)}%`;
       }
-      const modeLabel = player.mode === "hls" ? t("playerHls") : player.mode === "torrent" ? t("playerTorrent") : t("playerHttp");
+      const modeLabel = player.mode === "hls" ? t("playerHls")
+        : player.mode === "torrent" ? t("playerTorrent")
+        : player.mode === "server" ? t("playerServerOk")
+        : t("playerHttp");
       el.innerHTML = `
         <span>${escapeHtml(t("playerMode"))}: <b>${escapeHtml(modeLabel)}</b></span>
         <span>${escapeHtml(t("playerRes"))}: <b>${escapeHtml(res)}</b></span>
@@ -1391,6 +1501,7 @@
         ${player.mode === "torrent" ? `<span>${escapeHtml(t("playerPeers"))}: <b>${escapeHtml(peers)}</b></span>
         <span>${escapeHtml(t("playerDown"))}: <b>${escapeHtml(down)}</b></span>
         <span>${escapeHtml(t("playerProgress"))}: <b>${escapeHtml(prog)}</b></span>` : ""}
+        ${player.serverBase ? `<span>Server: <b>${escapeHtml(player.serverBase)}</b></span>` : ""}
         ${s?.media?.hdr ? `<span><b>${escapeHtml(t("playerHdrNote"))}</b></span>` : ""}`;
     }
     function bindPlayerChrome() {
@@ -1402,14 +1513,27 @@
       if (!video) return;
 
       const syncPlay = () => { if (playBtn) playBtn.textContent = video.paused ? t("playerPlay") : t("playerPause"); };
-      video.addEventListener("play", () => { syncPlay(); setPlayerOverlay(""); });
+      const clearWait = () => { clearTimeout(player.waitTimer); player.waitTimer = null; setPlayerOverlay(""); };
+      video.addEventListener("play", () => { syncPlay(); clearWait(); });
       video.addEventListener("pause", syncPlay);
-      video.addEventListener("waiting", () => playerOverlayMsg(t("playerBuffering"), t("playerCodecHint"), true));
-      video.addEventListener("playing", () => setPlayerOverlay(""));
+      video.addEventListener("waiting", () => {
+        clearTimeout(player.waitTimer);
+        player.waitTimer = setTimeout(() => {
+          if (!video.paused && video.readyState < 3) playerOverlayMsg(t("playerBuffering"), t("playerCodecHint"), true);
+        }, 700);
+      });
+      video.addEventListener("playing", clearWait);
+      video.addEventListener("canplay", clearWait);
       video.addEventListener("loadedmetadata", () => { updatePlayerStats(); if (seek) seek.max = video.duration || 0; });
       video.addEventListener("error", () => {
         const err = video.error;
-        playerOverlayMsg(t("playerError"), err?.message || `Media error ${err?.code || ""}`.trim() || t("playerNoPlayable"), false);
+        const code = err?.code;
+        const msg = err?.message || (code === 4 ? t("playerCodecHint") : `Media error ${code || ""}`.trim()) || t("playerNoPlayable");
+        if (player.mode === "server" || player.mode === "torrent") {
+          playerOverlayMsg(t("playerError"), msg, false);
+        } else {
+          playerOverlayMsg(t("playerError"), msg, false);
+        }
       });
       video.addEventListener("timeupdate", () => {
         if (!seek || seek.dataset.scrub === "1") return;
@@ -1466,6 +1590,7 @@
             <h2>${escapeHtml(detail?.name || stream.title)}</h2>
             <div class="subline">${escapeHtml(stream.quality)} · ${escapeHtml(stream.source)}${stream.size ? ` · ${escapeHtml(stream.size)}` : ""}</div>
             ${flags}
+            <div class="subline" style="margin-top:.35rem">${escapeHtml(t("streamServerHint"))}</div>
           </div>
           <div class="actions-scroll">
             <button type="button" class="btn ghost sm" id="slExternal">${escapeHtml(t("playerExternal"))}</button>
@@ -1473,7 +1598,7 @@
           </div>
         </div>
         <div class="player-stage">
-          <video id="slVideo" playsinline controlsList="nodownload"></video>
+          <video id="slVideo" playsinline preload="auto" controlsList="nodownload"></video>
           <div id="slOverlay" class="player-overlay"></div>
           <div id="slQualityPanel" class="player-panel hidden"><h4>${escapeHtml(t("playerQuality"))}</h4><div id="slQualityList"></div></div>
           <div id="slFilesPanel" class="player-panel hidden"><h4>${escapeHtml(t("playerFiles"))}</h4><div id="slFilesList"></div></div>
@@ -1594,44 +1719,61 @@
           return;
         }
       }
-      player.mode = "http";
+      player.mode = player.mode === "server" ? "server" : "http";
       video.src = url;
       try {
         await video.play();
         setPlayerOverlay("");
       } catch (err) {
-        playerOverlayMsg(t("playerError"), err.message || String(err), false);
+        // Autoplay may be blocked — still leave src set so user can press Play
+        setPlayerOverlay("");
+        toast(err.message || String(err));
       }
     }
-    async function startTorrentPlayback(magnetOrHash) {
+    async function startServerPlayback(stream) {
+      playerOverlayMsg(t("playerServerProbe"), t("streamServerHint"), true);
+      const base = await resolveStreamServer();
+      if (!base) throw new Error(t("playerServerMissing"));
+      player.mode = "server";
+      const url = await prepareServerTorrent(base, stream);
+      if (!url) throw new Error(t("playerNoPlayable"));
+      playerOverlayMsg(t("playerBuffering"), t("playerServerOk"), true);
+      await startHttpPlayback(url);
+      player.mode = "server";
+    }
+    async function startWebTorrentPlayback(magnetOrHash) {
       await ensurePlayerLibs(false, true);
       if (!window.WebTorrent) throw new Error("WebTorrent unavailable");
       player.mode = "torrent";
-      playerOverlayMsg(t("playerFindingPeers"), t("playerCodecHint"), true);
-      player.client = new WebTorrent({
-        tracker: {
+      playerOverlayMsg(t("playerFindingPeers"), t("playerWebRtcFail"), true);
+      player.client = new WebTorrent();
+      const torrentId = magnetOrHash;
+      await new Promise((resolve, reject) => {
+        let settled = false;
+        const failTimer = setTimeout(() => {
+          if (settled) return;
+          settled = true;
+          reject(new Error(t("playerWebRtcFail")));
+        }, 12000);
+        const torrent = player.client.add(torrentId, {
           announce: [
             "wss://tracker.openwebtorrent.com",
             "wss://tracker.btorrent.xyz",
             "wss://tracker.webtorrent.dev",
           ],
-        },
-      });
-      const torrentId = magnetOrHash;
-      await new Promise((resolve, reject) => {
-        const torrent = player.client.add(torrentId, { announce: [
-          "wss://tracker.openwebtorrent.com",
-          "wss://tracker.btorrent.xyz",
-          "wss://tracker.webtorrent.dev",
-          "udp://tracker.opentrackr.org:1337/announce",
-          "udp://open.stealth.si:80/announce",
-        ]}, (tor) => {
+        }, (tor) => {
           player.torrent = tor;
           const file = pickTorrentFile(tor, player.stream?.fileIdx);
-          if (!file) return reject(new Error(t("playerNoPlayable")));
+          if (!file) {
+            if (!settled) { settled = true; clearTimeout(failTimer); reject(new Error(t("playerNoPlayable"))); }
+            return;
+          }
           fillTorrentFiles(tor, file);
           const video = $("slVideo");
           const done = (err) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(failTimer);
             if (err) reject(err);
             else {
               setPlayerOverlay("");
@@ -1651,14 +1793,40 @@
             } else done(new Error(t("playerNoPlayable")));
           } catch (err) { done(err); }
         });
-        torrent.on("error", reject);
-        player.client.on("error", reject);
-        setTimeout(() => {
-          if (!player.torrent || (player.torrent.numPeers === 0 && player.torrent.progress === 0)) {
-            updatePlayerStats();
-          }
-        }, 8000);
+        torrent.on("error", (err) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(failTimer);
+          reject(err);
+        });
+        player.client.on("error", (err) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(failTimer);
+          reject(err);
+        });
       });
+    }
+    async function startTorrentPlayback(stream) {
+      // 1) Stremio local streaming server — real BitTorrent peers
+      try {
+        await startServerPlayback(stream);
+        return;
+      } catch (err) {
+        console.warn("[StremioLens] streaming server:", err);
+      }
+      // 2) WebTorrent WebRTC fallback (rarely works for public torrents)
+      const id = stream.magnet || (stream.infoHash ? `magnet:?xt=urn:btih:${stream.infoHash}` : null);
+      if (!id) {
+        showTorrentHelpOverlay();
+        return;
+      }
+      try {
+        await startWebTorrentPlayback(id);
+      } catch (err) {
+        console.warn("[StremioLens] webtorrent:", err);
+        showTorrentHelpOverlay();
+      }
     }
     async function openPlayer(stream, detail, streams) {
       if (!stream) return;
@@ -1672,11 +1840,10 @@
       renderPlayerShell(detail, stream);
       playerOverlayMsg(t("playerLoadingLibs"), t("playerCodecHint"), true);
       try {
-        if (stream.url) {
+        if (stream.url && !String(stream.url).startsWith("magnet:")) {
           await startHttpPlayback(stream.url);
-        } else if (stream.magnet || stream.infoHash) {
-          const id = stream.magnet || `magnet:?xt=urn:btih:${stream.infoHash}`;
-          await startTorrentPlayback(id);
+        } else if (stream.infoHash || stream.magnet) {
+          await startTorrentPlayback(stream);
         } else {
           playerOverlayMsg(t("playerError"), t("playerNoPlayable"), false);
         }
@@ -1707,6 +1874,7 @@
           </div><p class="disclaimer">${escapeHtml(t("seriesEpisodeHint"))}</p>` : ""}
           <div class="streams-filters" id="torFilters"></div>
           <p class="disclaimer">${escapeHtml(t("torrentioNote"))}</p>
+          <p class="disclaimer">${escapeHtml(t("streamServerHint"))}</p>
           <div style="margin-top:.65rem"><button type="button" class="btn ghost sm" id="torClose">${escapeHtml(t("close"))}</button></div>
         </div>
         <div class="stream-list" id="torList"><p class="muted">${escapeHtml(t("loadingStreams"))}</p></div>
