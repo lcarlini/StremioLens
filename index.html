@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -143,6 +143,7 @@
     .player-seek::-webkit-slider-thumb{appearance:none;width:14px;height:14px;border-radius:50%;background:var(--signal);box-shadow:0 0 0 3px rgba(255,90,54,.25)}
     .player-controls{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;margin-top:.55rem}
     .player-controls .btn{min-height:36px}
+    #slVideo::cue{background:rgba(0,0,0,.55);color:#fff;font-size:1.05em;line-height:1.35;text-shadow:0 1px 2px rgba(0,0,0,.8)}
     .player-time{font-variant-numeric:tabular-nums;font-size:.78rem;color:#c5d0de;min-width:7.5rem}
     .player-stats{display:flex;flex-wrap:wrap;gap:.35rem .7rem;margin-top:.45rem;font-size:.72rem;color:#9aabbf}
     .player-stats b{color:#e8eef6;font-weight:650}
@@ -542,7 +543,7 @@
     const API="https://api.strem.io/api", META="https://cinemeta-live.strem.io/meta", CATALOG="https://v3-cinemeta.strem.io/catalog";
     const TORRENTIO="https://torrentio.strem.fun";
     const AUTHOR={name:"Leandro Carlini Mingorance", titleKey:"engineer", url:"https://lcarlini.github.io/lcarlini/"};
-    const BUILD_ID="2026-07-17-r7";
+    const BUILD_ID="2026-07-18-r1";
     const SUBS_API="https://opensubtitles-v3.strem.io";
 
     /* Separate assignments avoid "Unexpected identifier 'pt'" if a comma is ever missing between locales. */
@@ -627,6 +628,10 @@
         subShared:"Subtitle ready to share/save",
         subLang:"Language",
         allLangs:"All languages",
+        subOff:"Subtitles off",
+        subOn:"Subtitles on",
+        autoSub:"Auto Portuguese (BR)",
+        preferredSub:"Preferred subtitle",
         playable:"Playable",
         downloadVideo:"Download",
         pickSubForFile:"Choose a subtitle — saved as {name}.LANG.srt"
@@ -711,6 +716,10 @@
         subShared:"Legenda pronta para compartilhar/salvar",
         subLang:"Idioma",
         allLangs:"Todos os idiomas",
+        subOff:"Legendas desligadas",
+        subOn:"Legendas ligadas",
+        autoSub:"Português (BR) automático",
+        preferredSub:"Legenda preferida",
         playable:"Playable",
         downloadVideo:"Download",
         pickSubForFile:"Escolha uma legenda — salva como {name}.LANG.srt"
@@ -795,13 +804,27 @@
         subShared:"Subtítulo listo para compartir/guardar",
         subLang:"Idioma",
         allLangs:"Todos los idiomas",
+        subOff:"Subtítulos apagados",
+        subOn:"Subtítulos activados",
+        autoSub:"Portugués (BR) automático",
+        preferredSub:"Subtítulo preferido",
         playable:"Playable",
         downloadVideo:"Descargar",
         pickSubForFile:"Elige un subtítulo — se guarda como {name}.LANG.srt"
     };
 
-    let lang = "en";
-    try { const saved = localStorage.getItem("stremiolens_lang"); if (saved && I18N[saved]) lang = saved; } catch (_) {}
+    let lang = "pt";
+    try {
+      const saved = localStorage.getItem("stremiolens_lang");
+      if (saved && I18N[saved]) lang = saved;
+      else if (!saved) localStorage.setItem("stremiolens_lang", "pt");
+    } catch (_) {}
+    let preferredSubLang = "pob";
+    try {
+      const savedSub = localStorage.getItem("stremiolens_sub_lang");
+      if (savedSub) preferredSubLang = savedSub;
+      else localStorage.setItem("stremiolens_sub_lang", "pob");
+    } catch (_) {}
     const t = (key, vars) => {
       let s = (I18N[lang] && I18N[lang][key]) || I18N.en[key] || key;
       if (vars) Object.entries(vars).forEach(([k, v]) => { s = s.replaceAll(`{${k}}`, String(v)); });
@@ -1371,6 +1394,20 @@
       const map = { eng:"English", por:"Português", pob:"Português (BR)", spa:"Español", fre:"Français", ger:"Deutsch", ita:"Italiano", dut:"Nederlands", rus:"Русский", ara:"العربية", chi:"中文", zho:"中文", jpn:"日本語", kor:"한국어", und:"—" };
       return map[code] || code || "—";
     }
+    function srcLangForCode(code) {
+      const map = { pob: "pt-BR", por: "pt", eng: "en", spa: "es", fre: "fr", ger: "de", ita: "it", dut: "nl", rus: "ru", ara: "ar", chi: "zh", zho: "zh", jpn: "ja", kor: "ko" };
+      return map[code] || code || "und";
+    }
+    function preferredSubOrder() {
+      const byUi = lang === "pt" ? ["pob", "por", "eng"] : lang === "es" ? ["spa", "eng", "pob"] : ["eng", "pob", "por", "spa"];
+      const ordered = [preferredSubLang, ...byUi].filter(Boolean);
+      return [...new Set(ordered)];
+    }
+    function setPreferredSubLang(code) {
+      if (!code) return;
+      preferredSubLang = code;
+      try { localStorage.setItem("stremiolens_sub_lang", code); } catch (_) {}
+    }
     function srtToVtt(srt) {
       const body = String(srt).replace(/\r\n/g, "\n").replace(/\r/g, "\n").replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, "$1.$2");
       return `WEBVTT\n\n${body}`;
@@ -1413,7 +1450,16 @@
       setTimeout(() => URL.revokeObjectURL(href), 2500);
       toast(t("subSaved"));
     }
-    function applySubtitleTrack(text, label) {
+    function clearSubtitleTracks() {
+      const video = $("slVideo");
+      if (!video) return;
+      [...video.querySelectorAll("track[data-sl]")].forEach((tr) => tr.remove());
+      if (player.subObjectUrl) { try { URL.revokeObjectURL(player.subObjectUrl); } catch (_) {} player.subObjectUrl = null; }
+      player.subLang = null;
+      player.subsOn = false;
+      syncSubsToggleBtn();
+    }
+    function applySubtitleTrack(text, label, langCode) {
       const video = $("slVideo");
       if (!video) return;
       [...video.querySelectorAll("track[data-sl]")].forEach((tr) => tr.remove());
@@ -1422,15 +1468,59 @@
       player.subObjectUrl = URL.createObjectURL(new Blob([vtt], { type: "text/vtt" }));
       const track = document.createElement("track");
       track.kind = "subtitles";
-      track.label = label || "Subtitles";
-      track.srclang = "en";
+      track.label = label || langLabel(langCode) || "Subtitles";
+      track.srclang = srcLangForCode(langCode);
       track.src = player.subObjectUrl;
       track.default = true;
       track.dataset.sl = "1";
       video.appendChild(track);
+      player.subLang = langCode || null;
+      player.subsOn = true;
       try {
-        if (video.textTracks?.[0]) video.textTracks[0].mode = "showing";
+        const show = () => {
+          const tracks = video.textTracks;
+          if (!tracks?.length) return;
+          for (let i = 0; i < tracks.length; i++) tracks[i].mode = i === tracks.length - 1 ? "showing" : "hidden";
+        };
+        track.addEventListener("load", show);
+        setTimeout(show, 80);
       } catch (_) {}
+      syncSubsToggleBtn();
+    }
+    function setSubtitlesVisible(on) {
+      const video = $("slVideo");
+      if (!video?.textTracks?.length) return;
+      player.subsOn = !!on;
+      try {
+        for (let i = 0; i < video.textTracks.length; i++) {
+          video.textTracks[i].mode = on ? (i === video.textTracks.length - 1 ? "showing" : "hidden") : "disabled";
+        }
+      } catch (_) {}
+      syncSubsToggleBtn();
+    }
+    function syncSubsToggleBtn() {
+      const btn = $("slSubsToggle");
+      if (!btn) return;
+      const has = !!player.subObjectUrl;
+      btn.disabled = !has;
+      btn.textContent = player.subsOn && has ? t("subOn") : t("subOff");
+      btn.classList.toggle("active", !!(player.subsOn && has));
+    }
+    async function autoLoadPreferredSubtitles(detail, stream) {
+      if (!detail?.id || !player.open) return;
+      try {
+        let id = detail.id;
+        if (detail.type === "series" && player.episodeId) id = player.episodeId;
+        const list = await fetchSubtitleList(detail.type === "series" ? "series" : "movie", id);
+        if (!list.length || !player.open) return;
+        const order = preferredSubOrder();
+        const pick = order.map((code) => list.find((s) => s.lang === code)).find(Boolean) || list[0];
+        if (!pick) return;
+        const text = await fetchSubtitleText(pick.url);
+        if (!player.open) return;
+        applySubtitleTrack(text, langLabel(pick.lang), pick.lang);
+        setPreferredSubLang(pick.lang);
+      } catch (_) { /* quiet — user can still open picker */ }
     }
 
     const player = {
@@ -1444,6 +1534,8 @@
       hls: null,
       objectUrl: null,
       subObjectUrl: null,
+      subLang: null,
+      subsOn: false,
       statsTimer: null,
       uiHideTimer: null,
       waitTimer: null,
@@ -1577,6 +1669,8 @@
       player.client = null;
       if (player.objectUrl) { try { URL.revokeObjectURL(player.objectUrl); } catch (_) {} player.objectUrl = null; }
       if (player.subObjectUrl) { try { URL.revokeObjectURL(player.subObjectUrl); } catch (_) {} player.subObjectUrl = null; }
+      player.subLang = null;
+      player.subsOn = false;
       const video = $("slVideo");
       if (video) { video.removeAttribute("src"); video.load(); }
     }
@@ -1648,12 +1742,17 @@
           return;
         }
         const langs = [...new Set(list.map((s) => s.lang))].sort((a, b) => a.localeCompare(b));
-        const preferred = (lang === "pt" ? ["pob", "por", "eng"] : lang === "es" ? ["spa", "eng"] : ["eng", "por", "spa"]);
-        let filterLang = preferred.find((l) => langs.includes(l)) || "";
+        const preferred = preferredSubOrder();
+        let filterLang = preferred.find((l) => langs.includes(l)) || preferredSubLang || "";
+        if (filterLang && !langs.includes(filterLang)) filterLang = preferred.find((l) => langs.includes(l)) || "";
         const render = () => {
           const rows = (filterLang ? list.filter((s) => s.lang === filterLang) : list).slice(0, 40);
           container.innerHTML = `<h4>${escapeHtml(t("subtitles"))}</h4>
+            <p class="muted" style="margin:0 0 .55rem;font-size:.78rem">${escapeHtml(t("preferredSub"))}: ${escapeHtml(langLabel(preferredSubLang))} · ${escapeHtml(t("autoSub"))}</p>
             <p class="muted" style="margin:0 0 .55rem;font-size:.78rem">${escapeHtml(t("pickSubForFile", { name: base }))}</p>
+            ${opts.allowTrack !== false ? `<div style="margin-bottom:.55rem;display:flex;flex-wrap:wrap;gap:.35rem">
+              <button type="button" class="btn ghost sm" id="subOffBtn">${escapeHtml(t("subOff"))}</button>
+            </div>` : ""}
             <div class="field" style="margin-bottom:.55rem"><label>${escapeHtml(t("subLang"))}</label>
               <select id="subLangFilter"><option value="">${escapeHtml(t("allLangs"))}</option>
                 ${langs.map((l) => `<option value="${escapeAttr(l)}" ${l===filterLang?"selected":""}>${escapeHtml(langLabel(l))} (${l})</option>`).join("")}
@@ -1670,6 +1769,10 @@
                 </div>
               </div>`).join("")}</div>`;
           $("subLangFilter").onchange = () => { filterLang = $("subLangFilter").value; render(); };
+          $("subOffBtn")?.addEventListener("click", () => {
+            clearSubtitleTracks();
+            toast(t("subOff"));
+          });
           container.querySelectorAll(".sub-row").forEach((row) => {
             const sub = rows[Number(row.dataset.sub)];
             row.querySelector(".sub-dl")?.addEventListener("click", async () => {
@@ -1681,7 +1784,8 @@
             row.querySelector(".sub-use")?.addEventListener("click", async () => {
               try {
                 const text = await fetchSubtitleText(sub.url);
-                applySubtitleTrack(text, langLabel(sub.lang));
+                applySubtitleTrack(text, langLabel(sub.lang), sub.lang);
+                setPreferredSubLang(sub.lang);
                 toast(t("useSub"));
               } catch (err) { toast(err.message || String(err)); }
             });
@@ -1800,6 +1904,19 @@
         if (opening) openSubtitlePicker(panel, player.detail, player.stream, { allowTrack: true });
         else hide(panel);
       });
+      $("slSubsToggle")?.addEventListener("click", () => {
+        if (!player.subObjectUrl) {
+          const panel = $("slSubsPanel");
+          if (panel) {
+            $("slQualityPanel")?.classList.add("hidden");
+            $("slFilesPanel")?.classList.add("hidden");
+            openSubtitlePicker(panel, player.detail, player.stream, { allowTrack: true });
+          }
+          return;
+        }
+        setSubtitlesVisible(!player.subsOn);
+        toast(player.subsOn ? t("subOn") : t("subOff"));
+      });
       $("slExternal")?.addEventListener("click", () => {
         const href = player.stream?.url || player.stream?.magnet;
         if (href) window.open(href, "_blank", "noopener,noreferrer");
@@ -1823,7 +1940,6 @@
             <div class="subline" style="margin-top:.35rem">${escapeHtml(t("streamServerHint"))}</div>
           </div>
           <div class="actions-scroll">
-            <button type="button" class="btn ghost sm" id="slSubsBtn">${escapeHtml(t("subtitles"))}</button>
             <button type="button" class="btn ghost sm" id="slExternal">${escapeHtml(t("playerExternal"))}</button>
             <button type="button" class="btn ghost sm" id="slClosePlayer">${escapeHtml(t("playerClose"))}</button>
           </div>
@@ -1842,6 +1958,8 @@
             <button type="button" class="btn ghost sm" id="slMute">${escapeHtml(t("playerMute"))}</button>
             <input id="slVol" class="player-vol" type="range" min="0" max="1" step="0.01" value="1" />
             <span class="player-time" id="slTime">0:00 / 0:00</span>
+            <button type="button" class="btn ghost sm" id="slSubsBtn">${escapeHtml(t("subtitles"))}</button>
+            <button type="button" class="btn ghost sm" id="slSubsToggle" disabled>${escapeHtml(t("subOff"))}</button>
             <label class="hide-xs" style="display:flex;align-items:center;gap:.35rem;font-size:.75rem;color:#b7c2d0">
               ${escapeHtml(t("playerSpeed"))}
               <select id="slSpeed" style="width:auto;min-height:32px;padding:.25rem .4rem">
@@ -1871,6 +1989,7 @@
         }));
       }
       bindPlayerChrome();
+      syncSubsToggleBtn();
     }
     function pickTorrentFile(torrent, preferredIdx) {
       const files = torrent.files || [];
@@ -2089,6 +2208,7 @@
           playerOverlayMsg(t("playerError"), t("playerNoPlayable"), false);
         }
         updatePlayerStats();
+        autoLoadPreferredSubtitles(detail, stream);
       } catch (err) {
         playerOverlayMsg(t("playerError"), err?.message || String(err), false);
       }
